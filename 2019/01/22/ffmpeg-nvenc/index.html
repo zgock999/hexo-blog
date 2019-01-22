@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+<title>openSUSE Leap 15でNVENCを有効にしたffmpegをビルドし、mpeg2-tsのGPUエンコードを行う - それすらもコアの果て</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+
+    <meta name="description" content="Gistから転載  Nvidia GPUが存在するLinux環境では、NVIDIAのハードウェアエンコーディング/デコーディング機能であるNVENC/NVDECが利用可能ですが、openSUSEの標準パッケージとして利用可能なffmpegではNVENC/NVDECが有効化されていません。これはNVIDIAのライセンス規約により同機能を有効にしたffmpegのバイナリ再配布が許されていないためです">
+<meta name="keywords" content="openSUSE,gpu,Linux,ffmpeg">
+<meta property="og:type" content="article">
+<meta property="og:title" content="openSUSE Leap 15でNVENCを有効にしたffmpegをビルドし、mpeg2-tsのGPUエンコードを行う">
+<meta property="og:url" content="https://blog.zgock-lab.net/2019/01/22/ffmpeg-nvenc/index.html">
+<meta property="og:site_name" content="それすらもコアの果て">
+<meta property="og:description" content="Gistから転載  Nvidia GPUが存在するLinux環境では、NVIDIAのハードウェアエンコーディング/デコーディング機能であるNVENC/NVDECが利用可能ですが、openSUSEの標準パッケージとして利用可能なffmpegではNVENC/NVDECが有効化されていません。これはNVIDIAのライセンス規約により同機能を有効にしたffmpegのバイナリ再配布が許されていないためです">
+<meta property="og:locale" content="ja">
+<meta property="og:updated_time" content="2019-01-22T20:13:26.873Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="openSUSE Leap 15でNVENCを有効にしたffmpegをビルドし、mpeg2-tsのGPUエンコードを行う">
+<meta name="twitter:description" content="Gistから転載  Nvidia GPUが存在するLinux環境では、NVIDIAのハードウェアエンコーディング/デコーディング機能であるNVENC/NVDECが利用可能ですが、openSUSEの標準パッケージとして利用可能なffmpegではNVENC/NVDECが有効化されていません。これはNVIDIAのライセンス規約により同機能を有効にしたffmpegのバイナリ再配布が許されていないためです">
+
+
+
+
+
+<link rel="icon" href="/images/favicon.svg">
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.7.2/css/bulma.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu:400,600|Source+Code+Pro">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css">
+
+
+    
+    
+    
+    <style>body>.footer,body>.navbar,body>.section{opacity:0}</style>
+    
+
+    
+    
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/css/lightgallery.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/css/justifiedGallery.min.css">
+    
+
+    
+    
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.css">
+
+
+    
+    
+    
+    
+
+<link rel="stylesheet" href="/css/back-to-top.css">
+
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    
+<link rel="stylesheet" href="/css/progressbar.css">
+<script src="https://cdn.jsdelivr.net/npm/pace-js@1.0.2/pace.min.js"></script>
+
+    
+    
+    
+
+    
+
+
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="is-3-column">
+    <nav class="navbar navbar-main">
+    <div class="container">
+        <div class="navbar-brand is-flex-center">
+            <a class="navbar-item navbar-logo" href="/">
+            
+                <img src="/uploads/banner.jpg" alt="openSUSE Leap 15でNVENCを有効にしたffmpegをビルドし、mpeg2-tsのGPUエンコードを行う" height="28">
+            
+            </a>
+        </div>
+        <div class="navbar-menu">
+            
+            <div class="navbar-start">
+                
+                <a class="navbar-item" href="/">Home</a>
+                
+                <a class="navbar-item" href="/archives">Archives</a>
+                
+                <a class="navbar-item" href="/categories">Categories</a>
+                
+                <a class="navbar-item" href="/tags">Tags</a>
+                
+                <a class="navbar-item" href="/about">About</a>
+                
+            </div>
+            
+            <div class="navbar-end">
+                
+                    
+                    
+                    <a class="navbar-item" target="_blank" title="Follow on Mastodon" href="https://mstdn.maud.io/@zgock999">
+                        
+                        <i class="fab fa-mastodon"></i>
+                        
+                    </a>
+                    
+                    <a class="navbar-item" target="_blank" title="Download on GitHub" href="http://github.com/ppoffice/hexo-theme-icarus">
+                        
+                        <i class="fab fa-github"></i>
+                        
+                    </a>
+                    
+                
+                
+                
+                <a class="navbar-item search" title="Search" href="javascript:;">
+                    <i class="fas fa-search"></i>
+                </a>
+                
+            </div>
+        </div>
+    </div>
+</nav>
+    
+    <section class="section">
+        <div class="container">
+            <div class="columns">
+                <div class="column is-8-tablet is-8-desktop is-6-widescreen has-order-2 column-main"><div class="card">
+    
+    <div class="card-image">
+        <span class="image is-7by1">
+            <img class="thumbnail" src="/uploads/opensuse.png" alt="openSUSE Leap 15でNVENCを有効にしたffmpegをビルドし、mpeg2-tsのGPUエンコードを行う">
+        </span>
+    </div>
+    
+    <div class="card-content article ">
+        
+        <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
+            <div class="level-left">
+                <time class="level-item has-text-grey" datetime="2019-01-22T04:13:18.000Z">2019-01-22</time>
+                
+                <div class="level-item">
+                <a class="has-link-grey -link" href="/categories/Linux/">Linux</a>&nbsp;/&nbsp;<a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
+                </div>
+                
+                
+                <span class="level-item has-text-grey">
+                    
+                    
+                    26分 read (About 3959 words)
+                </span>
+                
+            </div>
+        </div>
+        
+        <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
+            
+                openSUSE Leap 15でNVENCを有効にしたffmpegをビルドし、mpeg2-tsのGPUエンコードを行う
+            
+        </h1>
+        <div class="content">
+            <ul>
+<li>Gistから転載</li>
+</ul>
+<p>Nvidia GPUが存在するLinux環境では、NVIDIAのハードウェアエンコーディング/デコーディング機能であるNVENC/NVDECが利用可能ですが、openSUSEの標準パッケージとして利用可能なffmpegではNVENC/NVDECが有効化されていません。これはNVIDIAのライセンス規約により同機能を有効にしたffmpegのバイナリ再配布が許されていないためです。(おそらくほとんどのディストリビューション添付のffmpegも同じはず）</p>
+<p>そこで、ffmpegをソースからビルドし、NVENC/NVDECを使えるようにします</p>
+ <a id="more"></a>
+ <!-- toc -->
+<h2 id="ビルド依存環境のダウンロード"><a href="#ビルド依存環境のダウンロード" class="headerlink" title="ビルド依存環境のダウンロード"></a>ビルド依存環境のダウンロード</h2><p>zypperでffmpegに必要な各種ライブラリとツールをダウンロードします</p>
+<figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zypper si -d ffmpeg</span><br></pre></td></tr></table></figure>
+<h2 id="CUDA-ToolkitとNVIDIA-Video-SDKのインストール"><a href="#CUDA-ToolkitとNVIDIA-Video-SDKのインストール" class="headerlink" title="CUDA ToolkitとNVIDIA Video SDKのインストール"></a>CUDA ToolkitとNVIDIA Video SDKのインストール</h2><p>ffmpegでハードウェアによるリサイズやデインターレース等のフィルター機能を使う場合、CUDAライブラリの一つ、libnppが必要になりますのでこれもインストールします</p>
+<figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">wget https://developer.download.nvidia.com/compute/cuda/repos/opensuse15/x86_64/cuda-repo-opensuse15-10.0.130-1.x86_64.rpm</span><br><span class="line">sudo zypper in ./cuda-repo-opensuse15-10.0.130-1.x86_64.rpm</span><br><span class="line">sudo zypper ref</span><br><span class="line">sudo zypper in cuda-toolkit-10-0 cuda-npp-dev-10-0</span><br></pre></td></tr></table></figure>
+<p>NVIDIA Video SDKはVLCプロジェクトがgitレポジトリをホストしていますのでこれを入れます<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git</span><br><span class="line">cd nv-codec-headers</span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure></p>
+<h2 id="ffmpegのソース取得"><a href="#ffmpegのソース取得" class="headerlink" title="ffmpegのソース取得"></a>ffmpegのソース取得</h2><p>ffmpegのgithubリポジトリから最新のソースをダウンロードします</p>
+<figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone git://github.com/FFmpeg/FFmpeg ffmpeg/</span><br></pre></td></tr></table></figure>
+<h2 id="configure"><a href="#configure" class="headerlink" title="configure"></a>configure</h2><p>ffmpegになにもオプションを与えずに実行すると、そのffmpegがどういうオプションでコンパイルされているかを把握できるので、これをどこかにメモするなりコピペするなりで覚えておきます</p>
+<figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">$ffmpeg</span><br><span class="line"></span><br><span class="line">ffmpeg version 4.1 Copyright (c) 2000-2018 the FFmpeg developers</span><br><span class="line">  built with gcc 7 (SUSE Linux)</span><br><span class="line">  configuration: --prefix=/usr --libdir=/usr/lib64 --shlibdir=/usr/lib64 --incdir=/usr/include/ffmpeg --extra-cflags=&apos;-fmessage-length=0 -grecord-gcc-switches -O2 -Wall -D_FORTIFY_SOURCE=2 -fstack-protector-strong -funwind-tables -fasynchronous-unwind-tables -fstack-clash-protection -g&apos; --optflags=&apos;-fmessage-length=0 -grecord-gcc-switches -O2 -Wall -D_FORTIFY_SOURCE=2 -fstack-protector-strong -funwind-tables -fasynchronous-unwind-tables -fstack-clash-protection -g&apos; --disable-htmlpages --enable-pic --disable-stripping --enable-shared --disable-static --enable-gpl --disable-openssl --enable-avresample --enable-gnutls --enable-ladspa --enable-nvenc --enable-libfdk_aac --enable-nonfree --enable-nvdec --enable-libx264 --enable-libx265 --enable-vaapi --enable-vdpau --enable-libxvid --enable-cuda --enable-cuvid --disable-cuda --disable-cuvid --enable-libass --enable-libbluray --enable-libcelt --enable-libcdio --enable-libdc1394 --enable-libdrm --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libopenjpeg --enable-libopus --enable-libpulse --enable-libspeex --enable-libssh --enable-libtheora --enable-libtwolame --enable-libvorbis --enable-libv4l2 --enable-libvpx --enable-libwebp --enable-libxml2 --enable-libzvbi --enable-vaapi --enable-vdpau</span><br><span class="line">  libavutil      56. 22.100 / 56. 22.100</span><br><span class="line">  libavcodec     58. 35.100 / 58. 35.100</span><br><span class="line">  libavformat    58. 20.100 / 58. 20.100</span><br><span class="line">  libavdevice    58.  5.100 / 58.  5.100</span><br><span class="line">  libavfilter     7. 40.101 /  7. 40.101</span><br><span class="line">  libavresample   4.  0.  0 /  4.  0.  0</span><br><span class="line">  libswscale      5.  3.100 /  5.  3.100</span><br><span class="line">  libswresample   3.  3.100 /  3.  3.100</span><br><span class="line">  libpostproc    55.  3.100 / 55.  3.100</span><br><span class="line">Hyper fast Audio and Video encoder</span><br><span class="line">usage: ffmpeg [options] [[infile options] -i infile]... &#123;[outfile options] outfile&#125;...</span><br><span class="line"></span><br><span class="line">Use -h to get full help or, even better, run &apos;man ffmpeg&apos;</span><br></pre></td></tr></table></figure>
+<p>上記で確認したオプションに少々手を加えてconfigureします。ポイントとしては</p>
+<ul>
+<li>/usr/local/lib/cuda /usr/local/include/cudaをパスに加える</li>
+<li>prefixを/usr/localにする</li>
+<li>–enable-cuda-sdkと–enable-libnppを入れる</li>
+<li>–disable-cuda等があったら抜く</li>
+<li>–enable-libzbviを外す（2019/1/16現在、どうにも依存関係が解決できなかったのと、無くてもさほど困らないと判断して）<figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">--prefix=/usr/local --libdir=/usr/lib64 --shlibdir=/usr/lib64 \</span><br><span class="line">--extra-cflags=&apos;-fmessage-length=0 -grecord-gcc-switches -O2 -Wall -D_FORTIFY_SOURCE=2 -fstack-protector-strong -funwind-tables -fasynchronous-unwind-tables -fstack-clash-protection -g&apos; \</span><br><span class="line">--optflags=&apos;-fmessage-length=0 -grecord-gcc-switches -O2 -Wall -D_FORTIFY_SOURCE=2 -fstack-protector-strong -funwind-tables -fasynchronous-unwind-tables -fstack-clash-protection -g&apos; \</span><br><span class="line">--disable-htmlpages --enable-pic --disable-stripping --enable-shared --disable-static --enable-gpl --disable-openssl --enable-avresample \</span><br><span class="line">--enable-gnutls --enable-ladspa --enable-nvenc --enable-libfdk_aac --enable-nonfree --enable-nvdec --enable-libx264 --enable-libx265 \</span><br><span class="line">--enable-vaapi --enable-vdpau --enable-libxvid --enable-cuda --enable-cuvid --enable-libass \</span><br><span class="line">--enable-libbluray --enable-libcelt --enable-libcdio --enable-libdc1394 --enable-libdrm \</span><br><span class="line">--enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libgsm \</span><br><span class="line">--enable-libjack --enable-libmp3lame --enable-libopenjpeg --enable-libopus --enable-libpulse \</span><br><span class="line">--enable-libspeex --enable-libssh --enable-libtheora --enable-libtwolame --enable-libvorbis --enable-libv4l2 \</span><br><span class="line">--enable-libvpx --enable-libwebp --enable-libxml2 --enable-vaapi --enable-vdpau \</span><br><span class="line">--enable-cuda-sdk --enable-npp \</span><br><span class="line">--extra-cflags=&quot;-I/usr/local/cuda/include/&quot; \</span><br><span class="line">--extra-ldflags=-L/usr/local/cuda/lib64/</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>configureを実行すると依存関係であれがないこれがないと言われるはずなのでそれらを導入します<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo zypper in libx264-devel libx265-devel fdk-aac-devel openjpeg2-devel libssh-devel libxvidcore-devel</span><br></pre></td></tr></table></figure></p>
+<p>configureが通ると、このconfigで使用可能になっているデコーダー/エンコーダー/フィルタ等がリストアップされますので、この中にh264_cuvid、h264_nvenc、yadif_cuda、scale_npp等があればOKです</p>
+<figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">install prefix            /usr/local</span><br><span class="line">source path               .</span><br><span class="line">C compiler                gcc</span><br><span class="line">～略～</span><br><span class="line">External libraries providing hardware acceleration:</span><br><span class="line">cuda			libnpp			v4l2_m2m</span><br><span class="line">cuda_sdk		nvdec			vaapi</span><br><span class="line">cuvid			nvenc			vdpau</span><br><span class="line">ffnvcodec</span><br><span class="line"></span><br><span class="line">Enabled decoders:</span><br><span class="line">～略～</span><br><span class="line">adpcm_ima_wav		cpia			h264_cuvid</span><br><span class="line">～略～</span><br><span class="line">Enabled encoders:</span><br><span class="line">～略～</span><br><span class="line">h264_nvenc		pcm_s24le_planar	wmav2</span><br><span class="line">～略～</span><br><span class="line">Enabled hwaccels:</span><br><span class="line">～略～</span><br><span class="line">h264_nvdec		mpeg1_vdpau		vc1_vdpau</span><br><span class="line">～略～</span><br><span class="line">Enabled filters:</span><br><span class="line">～略～</span><br><span class="line">mcompand		scale_npp		tile</span><br><span class="line">～略～</span><br><span class="line">pixdesctest		silenceremove		yadif_cuda</span><br><span class="line">～略～</span><br></pre></td></tr></table></figure>
+<h2 id="make"><a href="#make" class="headerlink" title="make"></a>make</h2><p>cudaを有効にしている場合、makeの中でcuda toolkitのnvccを使うので、PATHに/usr/local/cuda/binを追加で通してmakeします<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PATH=$PATH:/usr/local/cuda/bin make</span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure></p>
+<p>これで/usr/local/binにnvencが有効になったffmpegが配置されます</p>
+<h2 id="使用可能オプション"><a href="#使用可能オプション" class="headerlink" title="使用可能オプション"></a>使用可能オプション</h2><h3 id="基本形"><a href="#基本形" class="headerlink" title="基本形"></a>基本形</h3><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -c:v mpeg2_cuvid [デコーダ側オプション] -i input.ts [必要ならフィルター指定] -c:v h264_nvenc [エンコーダ側オプション] output.mp4</span><br></pre></td></tr></table></figure>
+<h3 id="デコーダ-mpeg2-cuvid"><a href="#デコーダ-mpeg2-cuvid" class="headerlink" title="デコーダ(mpeg2_cuvid)"></a>デコーダ(mpeg2_cuvid)</h3><p>h264_cuvid,hevc_cuvid等もありますが基本的には同じです</p>
+<p>以下のようなオプションがありますので、cuvidを使う場合はリサイズやインターレース解除といった基本的な処理はfilterを使わずにデコーダで行います<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ffmpeg -h decoder=mpeg2_cuvid</span><br><span class="line">mpeg2_cuvid AVOptions:</span><br><span class="line">  -deint             &lt;int&gt;        .D.V..... Set deinterlacing mode (from 0 to 2) (default weave)</span><br><span class="line">     weave                        .D.V..... Weave deinterlacing (do nothing)</span><br><span class="line">     bob                          .D.V..... Bob deinterlacing</span><br><span class="line">     adaptive                     .D.V..... Adaptive deinterlacing</span><br><span class="line">  -gpu               &lt;string&gt;     .D.V..... GPU to be used for decoding</span><br><span class="line">  -surfaces          &lt;int&gt;        .D.V..... Maximum surfaces to be used for decoding (from 0 to INT_MAX) (default 25)</span><br><span class="line">  -drop_second_field &lt;boolean&gt;    .D.V..... Drop second field when deinterlacing (default false)</span><br><span class="line">  -crop              &lt;string&gt;     .D.V..... Crop (top)x(bottom)x(left)x(right)</span><br><span class="line">  -resize            &lt;string&gt;     .D.V..... Resize (width)x(height)</span><br></pre></td></tr></table></figure></p>
+<h4 id="リサイズ"><a href="#リサイズ" class="headerlink" title="リサイズ"></a>リサイズ</h4><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-resize 1280x720</span><br></pre></td></tr></table></figure>
+<p>地上デジタル放送や一部BS/CSにある、1440x1080といったソースは、デコーダ側で16:9にリサイズしてエンコーダに渡したほうが良好な結果が出ます<br>（1440x1080を1920x1080にリサイズしてエンコードしても最終サイズは誤差レベルでした）</p>
+<h4 id="インターレース解除"><a href="#インターレース解除" class="headerlink" title="インターレース解除"></a>インターレース解除</h4><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-deint adaptive -drop_second_field 1</span><br></pre></td></tr></table></figure>
+<p>-deintオプション単独で付与すると、その時点でフレーム数が２倍になるので、一般的録画エンコード目的では-drop_second_fieldとセットで使用します</p>
+<h4 id="クロップ-トリミング）"><a href="#クロップ-トリミング）" class="headerlink" title="クロップ(トリミング）"></a>クロップ(トリミング）</h4><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-crop 10x10x80x80</span><br></pre></td></tr></table></figure>
+<p>上記の例では、上下10ピクセル、左右80ピクセルをトリミングしています</p>
+<h3 id="エンコーダ-h264-nvenc"><a href="#エンコーダ-h264-nvenc" class="headerlink" title="エンコーダ(h264_nvenc)"></a>エンコーダ(h264_nvenc)</h3><p>hevc_nvenc等もありますが基本的には同じです<br>たくさんあるので主に使うものだけ<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><span class="line">h264_nvenc AVOptions:</span><br><span class="line">  -preset            &lt;int&gt;        E..V..... Set the encoding preset (from 0 to 11) (default medium)</span><br><span class="line">     default                      E..V..... </span><br><span class="line">     slow                         E..V..... hq 2 passes</span><br><span class="line">     medium                       E..V..... hq 1 pass</span><br><span class="line">     fast                         E..V..... hp 1 pass</span><br><span class="line">     hp                           E..V..... </span><br><span class="line">     hq                           E..V..... </span><br><span class="line">     bd                           E..V..... </span><br><span class="line">     ll                           E..V..... low latency</span><br><span class="line">     llhq                         E..V..... low latency hq</span><br><span class="line">     llhp                         E..V..... low latency hp</span><br><span class="line">     lossless                     E..V..... </span><br><span class="line">     losslesshp                   E..V..... </span><br><span class="line">  -profile           &lt;int&gt;        E..V..... Set the encoding profile (from 0 to 3) (default main)</span><br><span class="line">     baseline                     E..V..... </span><br><span class="line">     main                         E..V..... </span><br><span class="line">     high                         E..V..... </span><br><span class="line">     high444p                     E..V..... </span><br><span class="line">  -level             &lt;int&gt;        E..V..... Set the encoding level restriction (from 0 to 51) (default auto)</span><br><span class="line">     auto                         E..V..... </span><br><span class="line">     1                            E..V..... </span><br><span class="line">     1.0                          E..V..... </span><br><span class="line">     1b                           E..V..... </span><br><span class="line">     1.0b                         E..V..... </span><br><span class="line">     1.1                          E..V..... </span><br><span class="line">     1.2                          E..V..... </span><br><span class="line">     1.3                          E..V..... </span><br><span class="line">     2                            E..V..... </span><br><span class="line">     2.0                          E..V..... </span><br><span class="line">     2.1                          E..V..... </span><br><span class="line">     2.2                          E..V..... </span><br><span class="line">     3                            E..V..... </span><br><span class="line">     3.0                          E..V..... </span><br><span class="line">     3.1                          E..V..... </span><br><span class="line">     3.2                          E..V..... </span><br><span class="line">     4                            E..V..... </span><br><span class="line">     4.0                          E..V..... </span><br><span class="line">     4.1                          E..V..... </span><br><span class="line">     4.2                          E..V..... </span><br><span class="line">     5                            E..V..... </span><br><span class="line">     5.0                          E..V..... </span><br><span class="line">     5.1                          E..V..... </span><br><span class="line">  -rc                &lt;int&gt;        E..V..... Override the preset rate-control (from -1 to INT_MAX) (default -1)</span><br><span class="line">     constqp                      E..V..... Constant QP mode</span><br><span class="line">     vbr                          E..V..... Variable bitrate mode</span><br><span class="line">     cbr                          E..V..... Constant bitrate mode</span><br><span class="line">     vbr_minqp                    E..V..... Variable bitrate mode with MinQP (deprecated)</span><br><span class="line">     ll_2pass_quality              E..V..... Multi-pass optimized for image quality (deprecated)</span><br><span class="line">     ll_2pass_size                E..V..... Multi-pass optimized for constant frame size (deprecated)</span><br><span class="line">     vbr_2pass                    E..V..... Multi-pass variable bitrate mode (deprecated)</span><br><span class="line">     cbr_ld_hq                    E..V..... Constant bitrate low delay high quality mode</span><br><span class="line">     cbr_hq                       E..V..... Constant bitrate high quality mode</span><br><span class="line">     vbr_hq                       E..V..... Variable bitrate high quality mode</span><br><span class="line">  -rc-lookahead      &lt;int&gt;        E..V..... Number of frames to look ahead for rate-control (from 0 to INT_MAX) (default 0)</span><br><span class="line">  -surfaces          &lt;int&gt;        E..V..... Number of concurrent surfaces (from 0 to 64) (default 0)</span><br><span class="line">  -cbr               &lt;boolean&gt;    E..V..... Use cbr encoding mode (default false)</span><br><span class="line">  -2pass             &lt;boolean&gt;    E..V..... Use 2pass encoding mode (default auto)</span><br><span class="line">  -gpu               &lt;int&gt;        E..V..... Selects which NVENC capable GPU to use. First GPU is 0, second is 1, and so on. (from -2 to INT_MAX) (default any)</span><br><span class="line">     any                          E..V..... Pick the first device available</span><br><span class="line">     list                         E..V..... List the available devices</span><br><span class="line">  -delay             &lt;int&gt;        E..V..... Delay frame output by the given amount of frames (from 0 to INT_MAX) (default INT_MAX)</span><br><span class="line">  -no-scenecut       &lt;boolean&gt;    E..V..... When lookahead is enabled, set this to 1 to disable adaptive I-frame insertion at scene cuts (default false)</span><br><span class="line">  -forced-idr        &lt;boolean&gt;    E..V..... If forcing keyframes, force them as IDR frames. (default false)</span><br><span class="line">  -b_adapt           &lt;boolean&gt;    E..V..... When lookahead is enabled, set this to 0 to disable adaptive B-frame decision (default true)</span><br><span class="line">  -spatial-aq        &lt;boolean&gt;    E..V..... set to 1 to enable Spatial AQ (default false)</span><br><span class="line">  -temporal-aq       &lt;boolean&gt;    E..V..... set to 1 to enable Temporal AQ (default false)</span><br><span class="line">  -zerolatency       &lt;boolean&gt;    E..V..... Set 1 to indicate zero latency operation (no reordering delay) (default false)</span><br><span class="line">  -nonref_p          &lt;boolean&gt;    E..V..... Set this to 1 to enable automatic insertion of non-reference P-frames (default false)</span><br><span class="line">  -strict_gop        &lt;boolean&gt;    E..V..... Set 1 to minimize GOP-to-GOP rate fluctuations (default false)</span><br><span class="line">  -aq-strength       &lt;int&gt;        E..V..... When Spatial AQ is enabled, this field is used to specify AQ strength. AQ strength scale is from 1 (low) - 15 (aggressive) (from 1 to 15) (default 8)</span><br><span class="line">  -cq                &lt;float&gt;      E..V..... Set target quality level (0 to 51, 0 means automatic) for constant quality mode in VBR rate control (from 0 to 51) (default 0)</span><br><span class="line">  -aud               &lt;boolean&gt;    E..V..... Use access unit delimiters (default false)</span><br><span class="line">  -bluray-compat     &lt;boolean&gt;    E..V..... Bluray compatibility workarounds (default false)</span><br><span class="line">  -init_qpP          &lt;int&gt;        E..V..... Initial QP value for P frame (from -1 to 51) (default -1)</span><br><span class="line">  -init_qpB          &lt;int&gt;        E..V..... Initial QP value for B frame (from -1 to 51) (default -1)</span><br><span class="line">  -init_qpI          &lt;int&gt;        E..V..... Initial QP value for I frame (from -1 to 51) (default -1)</span><br><span class="line">  -qp                &lt;int&gt;        E..V..... Constant quantization parameter rate control method (from -1 to 51) (default -1)</span><br><span class="line">  -weighted_pred     &lt;int&gt;        E..V..... Set 1 to enable weighted prediction (from 0 to 1) (default 0)</span><br><span class="line">  -coder             &lt;int&gt;        E..V..... Coder type (from -1 to 2) (default default)</span><br><span class="line">     default                      E..V..... </span><br><span class="line">     auto                         E..V..... </span><br><span class="line">     cabac                        E..V..... </span><br><span class="line">     cavlc                        E..V..... </span><br><span class="line">     ac                           E..V..... </span><br><span class="line">     vlc                          E..V..... </span><br><span class="line">  -b_ref_mode        &lt;int&gt;        E..V..... Use B frames as references (from 0 to 2) (default disabled)</span><br><span class="line">     disabled                     E..V..... B frames will not be used for reference</span><br><span class="line">     each                         E..V..... Each B frame will be used for reference</span><br><span class="line">     middle                       E..V..... Only (number of B frames)/2 will be used for reference</span><br><span class="line">  -a53cc             &lt;boolean&gt;    E..V..... Use A53 Closed Captions (if available) (default true)</span><br></pre></td></tr></table></figure></p>
+<h4 id="ビットレート指定"><a href="#ビットレート指定" class="headerlink" title="ビットレート指定"></a>ビットレート指定</h4><p>基本的にファイルへのエンコードであれば -rc vbr_hqを、リアルタイムトランスコードであればcbr_ld_hqを指定すれば大丈夫です</p>
+<p>（手元の環境では-vbr-hq指定がqp指定やcq指定より良好な結果が出ました）</p>
+<figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-vb 3M -rc vbr_hq</span><br></pre></td></tr></table></figure>
+<p>デコーダでソースを1280x720等にリサイズ済であればデフォルトの2M、1920x1080の場合で3Mぐらいあれば十分かと思います</p>
+<h4 id="プリセット"><a href="#プリセット" class="headerlink" title="プリセット"></a>プリセット</h4><p>ファイルエンコードであれば無指定(medium)で良いと思います</p>
+<p>（もっともslowにして2passにしても劇的に画質が改善されるというほどでもない説）</p>
+<p>リアルタイムトランスコードであればfastか無指定で良いかと</p>
+<h4 id="ゼロレイテンシ"><a href="#ゼロレイテンシ" class="headerlink" title="ゼロレイテンシ"></a>ゼロレイテンシ</h4><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-zerolatency 1</span><br></pre></td></tr></table></figure>
+<p>リアルタイムトランスコードの場合、これを付けるとストリーム開始の待ちがほぼなくなります</p>
+<h2 id="エンコードテスト"><a href="#エンコードテスト" class="headerlink" title="エンコードテスト"></a>エンコードテスト</h2><p>2019/01/16現在でのffmpegのエンコードテスト結果を残しておきます</p>
+<h3 id="テスト環境"><a href="#テスト環境" class="headerlink" title="テスト環境"></a>テスト環境</h3><p>openSUSE Leap 15 on openSUSE Leap 15 with KVM(GPUパススルーで750Tiを渡しています）</p>
+<ul>
+<li>GPU: NVIDIA Geforce 750Ti</li>
+<li>CPU: Intel Xeon E3 1245V2(Ivybridge) 3.0GHz VCPU 4Core</li>
+<li>Mem 4GB</li>
+<li>ソース：地デジタル放送録画ファイル（30分のアニメ3.7GB 1440x1080)</li>
+</ul>
+<h3 id="サイズ1920x1080-vbr-hqのみ"><a href="#サイズ1920x1080-vbr-hqのみ" class="headerlink" title="サイズ1920x1080/-vbr_hqのみ"></a>サイズ1920x1080/-vbr_hqのみ</h3><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -c:v mpeg2_cuvid -resize 1920x1080 -i input.ts -c:v h264_nvenc -rc vbr_hq -c:a aac -b:a 192k -r:a 48000 -ac 2 -f mp4 -aspect 16:9 output.mp4</span><br></pre></td></tr></table></figure>
+<ul>
+<li>エンコード速度 : 7.5倍速</li>
+<li>ファイルサイズ : 532M</li>
+</ul>
+<p>ちょっと保存には使えないレベル、画質を気にしない番組ならまあ。ぐらい</p>
+<h3 id="サイズ1920x1080-amp-インターレース解除-vbr-hqのみ"><a href="#サイズ1920x1080-amp-インターレース解除-vbr-hqのみ" class="headerlink" title="サイズ1920x1080&amp;インターレース解除/-vbr_hqのみ"></a>サイズ1920x1080&amp;インターレース解除/-vbr_hqのみ</h3><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -c:v mpeg2_cuvid -resize 1920x1080 -deint 2 -drop_second_field 1 -i input.ts -c:v h264_nvenc -rc vbr_hq -c:a aac -b:a 192k -r:a 48000 -ac 2 -f mp4 -aspect 16:9 output.mp4</span><br></pre></td></tr></table></figure>
+<ul>
+<li>エンコード速度 : 6倍速</li>
+<li>ファイルサイズ : 508M</li>
+</ul>
+<p>インターレース解除によりサイズが縮む。画質もかなり見られるようになる。家族にQSVエンコードした同サイズ動画とブラインドテストしてもらったけど区別がつかなかった</p>
+<h3 id="サイズ1920x1080-amp-インターレース解除-ビットレート3M"><a href="#サイズ1920x1080-amp-インターレース解除-ビットレート3M" class="headerlink" title="サイズ1920x1080&amp;インターレース解除/ビットレート3M"></a>サイズ1920x1080&amp;インターレース解除/ビットレート3M</h3><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -c:v mpeg2_cuvid -resize 1920x1080 -deint 2 -drop_second_field 1 -i input.ts -c:v h264_nvenc -vb 3M -rc vbr_hq -c:a aac -b:a 192k -r:a 48000 -ac 2 -f mp4 -aspect 16:9 output.mp4</span><br></pre></td></tr></table></figure>
+<ul>
+<li>エンコード速度 : 6倍速</li>
+<li>ファイルサイズ : 680M</li>
+</ul>
+<p>単純にビットレートが増えた分サイズが大きくなる。保存用にしても良いと思えるレベル（主観）</p>
+<h3 id="サイズ1440x810-amp-インターレース解除-vbr-hqのみ"><a href="#サイズ1440x810-amp-インターレース解除-vbr-hqのみ" class="headerlink" title="サイズ1440x810&amp;インターレース解除/-vbr_hqのみ"></a>サイズ1440x810&amp;インターレース解除/-vbr_hqのみ</h3><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -c:v mpeg2_cuvid -resize 1440x810 -deint 2 -drop_second_field 1 -i input.ts -c:v h264_nvenc -rc vbr_hq -c:a aac -b:a 192k -r:a 48000 -ac 2 -f mp4 -aspect 16:9 output.mp4</span><br></pre></td></tr></table></figure>
+<ul>
+<li>エンコード速度 : 9倍速</li>
+<li>ファイルサイズ : 492M</li>
+</ul>
+<p>速度とサイズと画質のバランスが非常に良い（主観）。1440x1080のソースであればこれで十分説。自分ちの録画サーバーのデフォルトはこの設定にしてる</p>
+<h3 id="サイズ1280x720-amp-インターレース解除-ビットレート1-5M"><a href="#サイズ1280x720-amp-インターレース解除-ビットレート1-5M" class="headerlink" title="サイズ1280x720&amp;インターレース解除/ビットレート1.5M"></a>サイズ1280x720&amp;インターレース解除/ビットレート1.5M</h3><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -c:v mpeg2_cuvid -resize 1280x720 -deint 2 -drop_second_field 1 -i input.ts -c:v h264_nvenc -vb 1500k -rc vbr_hq -c:a aac -b:a 192k -r:a 48000 -ac 2 -f mp4 -aspect 16:9 output.mp4</span><br></pre></td></tr></table></figure>
+<ul>
+<li>エンコード速度 : 11倍速</li>
+<li>ファイルサイズ : 372M</li>
+</ul>
+<p>スマホ観賞用サイズ。スマホ等で鑑賞する分には全く問題ない。出かける前に電車でこれ見ようとエンコードを開始して、駅までの間にエンコードが終わってるのは便利</p>
+<h3 id="サイズ1080x810-4-3トリミング-amp-インターレース解除-vbr-hqのみ"><a href="#サイズ1080x810-4-3トリミング-amp-インターレース解除-vbr-hqのみ" class="headerlink" title="サイズ1080x810(4:3トリミング)&amp;インターレース解除/-vbr_hqのみ"></a>サイズ1080x810(4:3トリミング)&amp;インターレース解除/-vbr_hqのみ</h3><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -c:v mpeg2_cuvid -crop 0x0x180x180 -resize 1080x810 -deint 2 -drop_second_field 1 -i input.ts -c:v h264_nvenc -rc vbr_hq -c:a aac -b:a 192k -r:a 48000 -ac 2 -f mp4 -aspect 4:3 output.mp4</span><br></pre></td></tr></table></figure>
+<ul>
+<li>エンコード速度 : 9.5倍速</li>
+<li>ファイルサイズ : 402M</li>
+</ul>
+<p>4:3のソースをトリミングして容量削減を狙った設定。もともと4:3ソースという時点でソースの画質自体がわりとお察しなのもあり余裕で綺麗。</p>
+<h3 id="GTX1080との比較"><a href="#GTX1080との比較" class="headerlink" title="GTX1080との比較"></a>GTX1080との比較</h3><p>別マシンのGTX1080にてh264テストを行ったところ、エンコード速度は概ね２〜２．５倍程度（1440x810で20倍速ぐらい）になったが、最終サイズは1MB未満の差しかなく、画質面では有意な差は感じられなかった。最近NVENCが画質面でもQSVにかなり追いついたと言われるが、ドライバ層での改善による点が大きいと思われる</p>
+<h2 id="まとめ"><a href="#まとめ" class="headerlink" title="まとめ"></a>まとめ</h2><p>QSVと比較すると画質面で落ちる落ちると言われていたNVENCですが、最近はドライバとffmpegの改善により以前ほど差がない、というよりHEVCでは逆転現象すら起きている状態です。是非一度試してみてください</p>
+
+        </div>
+        
+        <div class="level is-size-7 is-uppercase">
+            <div class="level-start">
+                <div class="level-item">
+                    <span class="is-size-6 has-text-grey has-mr-7">#</span>
+                    <a class="has-link-grey -link" href="/tags/Linux/">Linux</a>, <a class="has-link-grey -link" href="/tags/ffmpeg/">ffmpeg</a>, <a class="has-link-grey -link" href="/tags/gpu/">gpu</a>, <a class="has-link-grey -link" href="/tags/openSUSE/">openSUSE</a>
+                </div>
+            </div>
+        </div>
+        
+        
+        
+    </div>
+</div>
+
+
+
+
+
+<div class="card card-transparent">
+    <div class="level post-navigation is-flex-wrap is-mobile">
+        
+        <div class="level-start">
+            <a class="level level-item has-link-grey  article-nav-prev" href="/2019/01/23/gvtg/">
+                <i class="level-item fas fa-chevron-left"></i>
+                <span class="level-item">openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その１</span>
+            </a>
+        </div>
+        
+        
+    </div>
+</div>
+
+
+</div>
+                
+
+
+
+
+<div class="column is-4-tablet is-4-desktop is-3-widescreen  has-order-1 column-left ">
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <nav class="level">
+            <div class="level-item has-text-centered">
+                <div>
+                    <img class="image is-128x128 has-mb-6" src="/uploads/logo.jpg" alt="zgock999">
+                    
+                    <p class="is-size-4 is-block">
+                        zgock999
+                    </p>
+                    
+                    
+                    <p class="is-size-6 is-block">
+                        仮想化とGPUとopenSUSEのおたく
+                    </p>
+                    
+                    
+                    <p class="is-size-6 is-flex is-flex-center has-text-grey">
+                        <i class="fas fa-map-marker-alt has-mr-7"></i>
+                        <span>Aichi Japan</span>
+                    </p>
+                    
+                </div>
+            </div>
+        </nav>
+        <nav class="level is-mobile">
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        投稿
+                    </p>
+                    <p class="title has-text-weight-normal">
+                        3
+                    </p>
+                </div>
+            </div>
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        カテゴリ
+                    </p>
+                    <p class="title has-text-weight-normal">
+                        2
+                    </p>
+                </div>
+            </div>
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        タグ
+                    </p>
+                    <p class="title has-text-weight-normal">
+                        8
+                    </p>
+                </div>
+            </div>
+        </nav>
+        <div class="level">
+            <a class="level-item button is-link is-rounded" href="https://mstdn.maud.io/@zgock999">
+                フォローする</a>
+        </div>
+        
+        
+        <div class="level is-mobile">
+            
+            <a class="level-item button is-white is-marginless" target="_blank" title="Github" href="https://github.com/zgock999">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+            
+            <a class="level-item button is-white is-marginless" target="_blank" title="Mastodon" href="https://mstdn.maud.io/@zgock999">
+                
+                <i class="fab fa-mastodon"></i>
+                
+            </a>
+            
+            <a class="level-item button is-white is-marginless" target="_blank" title="Bitbucket" href="https://bitbucket.org/zgock/">
+                
+                <i class="fab fa-bitbucket"></i>
+                
+            </a>
+            
+            <a class="level-item button is-white is-marginless" target="_blank" title="RSS" href="/atom.xml">
+                
+                <i class="fas fa-rss"></i>
+                
+            </a>
+            
+        </div>
+        
+    </div>
+</div>
+    
+        
+    
+        
+
+
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+            <h3 class="menu-label">
+                カテゴリ
+            </h3>
+            <ul class="menu-list">
+            <li>
+        <a class="level is-marginless" href="/categories/Linux/">
+            <span class="level-start">
+                <span class="level-item">Linux</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">2</span>
+            </span>
+        </a><ul><li>
+        <a class="level is-marginless" href="/categories/Linux/openSUSE/">
+            <span class="level-start">
+                <span class="level-item">openSUSE</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">2</span>
+            </span>
+        </a></li></ul></li>
+            </ul>
+        </div>
+    </div>
+</div>
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <h3 class="menu-label">
+            タグクラウド
+        </h3>
+        <a href="/tags/GVT-g/" style="font-size: 10px;">GVT-g</a> <a href="/tags/KVM/" style="font-size: 10px;">KVM</a> <a href="/tags/Linux/" style="font-size: 20px;">Linux</a> <a href="/tags/ffmpeg/" style="font-size: 10px;">ffmpeg</a> <a href="/tags/gpu/" style="font-size: 20px;">gpu</a> <a href="/tags/misc/" style="font-size: 10px;">misc</a> <a href="/tags/openSUSE/" style="font-size: 20px;">openSUSE</a> <a href="/tags/仮想化/" style="font-size: 10px;">仮想化</a>
+    </div>
+</div>
+
+    
+    
+        <div class="column-right-shadow is-hidden-widescreen ">
+        
+            
+<div class="card widget">
+    <div class="card-content">
+        <h3 class="menu-label">
+            最近の記事
+        </h3>
+        
+        <article class="media">
+            
+            <a href="/2999/12/31/firstpost/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/images/thumbnail.svg" alt="blog建てた">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2999-12-31T03:59:59.000Z">2999-12-31</time></div>
+                    <a href="/2999/12/31/firstpost/" class="has-link-black-ter is-size-6">blog建てた</a>
+                    <p class="is-size-7 is-uppercase">
+                        
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/01/23/gvtg/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/uploads/opensuse.png" alt="openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その１">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-01-22T17:57:55.000Z">2019-01-23</time></div>
+                    <a href="/2019/01/23/gvtg/" class="has-link-black-ter is-size-6">openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その１</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Linux/">Linux</a> / <a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/01/22/ffmpeg-nvenc/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/uploads/opensuse.png" alt="openSUSE Leap 15でNVENCを有効にしたffmpegをビルドし、mpeg2-tsのGPUエンコードを行う">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-01-22T04:13:18.000Z">2019-01-22</time></div>
+                    <a href="/2019/01/22/ffmpeg-nvenc/" class="has-link-black-ter is-size-6">openSUSE Leap 15でNVENCを有効にしたffmpegをビルドし、mpeg2-tsのGPUエンコードを行う</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Linux/">Linux</a> / <a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+    </div>
+</div>
+
+        
+            <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+        <h3 class="menu-label">
+            アーカイブ
+        </h3>
+        <ul class="menu-list">
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2999/12/">
+                <span class="level-start">
+                    <span class="level-item">十二月 2999</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/01/">
+                <span class="level-start">
+                    <span class="level-item">一月 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">2</span>
+                </span>
+            </a>
+        </li>
+        
+        </ul>
+        </div>
+    </div>
+</div>
+
+        
+            <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+            <h3 class="menu-label">
+                タグ
+            </h3>
+            <div class="field is-grouped is-grouped-multiline">
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/GVT-g/">
+                        <span class="tag">GVT-g</span>
+                        <span class="tag is-grey">1</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/KVM/">
+                        <span class="tag">KVM</span>
+                        <span class="tag is-grey">1</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/Linux/">
+                        <span class="tag">Linux</span>
+                        <span class="tag is-grey">2</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/ffmpeg/">
+                        <span class="tag">ffmpeg</span>
+                        <span class="tag is-grey">1</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/gpu/">
+                        <span class="tag">gpu</span>
+                        <span class="tag is-grey">2</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/misc/">
+                        <span class="tag">misc</span>
+                        <span class="tag is-grey">1</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/openSUSE/">
+                        <span class="tag">openSUSE</span>
+                        <span class="tag is-grey">2</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/仮想化/">
+                        <span class="tag">仮想化</span>
+                        <span class="tag is-grey">1</span>
+                    </a>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+        
+        </div>
+    
+</div>
+
+                
+
+
+
+
+<div class="column is-4-tablet is-4-desktop is-3-widescreen is-hidden-touch is-hidden-desktop-only has-order-3 column-right ">
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <h3 class="menu-label">
+            最近の記事
+        </h3>
+        
+        <article class="media">
+            
+            <a href="/2999/12/31/firstpost/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/images/thumbnail.svg" alt="blog建てた">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2999-12-31T03:59:59.000Z">2999-12-31</time></div>
+                    <a href="/2999/12/31/firstpost/" class="has-link-black-ter is-size-6">blog建てた</a>
+                    <p class="is-size-7 is-uppercase">
+                        
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/01/23/gvtg/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/uploads/opensuse.png" alt="openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その１">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-01-22T17:57:55.000Z">2019-01-23</time></div>
+                    <a href="/2019/01/23/gvtg/" class="has-link-black-ter is-size-6">openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その１</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Linux/">Linux</a> / <a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/01/22/ffmpeg-nvenc/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/uploads/opensuse.png" alt="openSUSE Leap 15でNVENCを有効にしたffmpegをビルドし、mpeg2-tsのGPUエンコードを行う">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-01-22T04:13:18.000Z">2019-01-22</time></div>
+                    <a href="/2019/01/22/ffmpeg-nvenc/" class="has-link-black-ter is-size-6">openSUSE Leap 15でNVENCを有効にしたffmpegをビルドし、mpeg2-tsのGPUエンコードを行う</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Linux/">Linux</a> / <a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+    </div>
+</div>
+
+    
+        <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+        <h3 class="menu-label">
+            アーカイブ
+        </h3>
+        <ul class="menu-list">
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2999/12/">
+                <span class="level-start">
+                    <span class="level-item">十二月 2999</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/01/">
+                <span class="level-start">
+                    <span class="level-item">一月 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">2</span>
+                </span>
+            </a>
+        </li>
+        
+        </ul>
+        </div>
+    </div>
+</div>
+
+    
+        <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+            <h3 class="menu-label">
+                タグ
+            </h3>
+            <div class="field is-grouped is-grouped-multiline">
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/GVT-g/">
+                        <span class="tag">GVT-g</span>
+                        <span class="tag is-grey">1</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/KVM/">
+                        <span class="tag">KVM</span>
+                        <span class="tag is-grey">1</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/Linux/">
+                        <span class="tag">Linux</span>
+                        <span class="tag is-grey">2</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/ffmpeg/">
+                        <span class="tag">ffmpeg</span>
+                        <span class="tag is-grey">1</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/gpu/">
+                        <span class="tag">gpu</span>
+                        <span class="tag is-grey">2</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/misc/">
+                        <span class="tag">misc</span>
+                        <span class="tag is-grey">1</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/openSUSE/">
+                        <span class="tag">openSUSE</span>
+                        <span class="tag is-grey">2</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/仮想化/">
+                        <span class="tag">仮想化</span>
+                        <span class="tag is-grey">1</span>
+                    </a>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+    
+    
+</div>
+
+            </div>
+        </div>
+    </section>
+    <footer class="footer">
+    <div class="container">
+        <div class="level">
+            <div class="level-start has-text-centered-mobile">
+                <a class="footer-logo is-block has-mb-6" href="/">
+                
+                    <img src="/uploads/banner.jpg" alt="openSUSE Leap 15でNVENCを有効にしたffmpegをビルドし、mpeg2-tsのGPUエンコードを行う" height="28">
+                
+                </a>
+                <p class="is-size-7">
+                &copy; 2019 zgock999&nbsp;
+                Powered by <a href="http://hexo.io/" target="_blank">Hexo</a> & <a href="http://github.com/ppoffice/hexo-theme-icarus">Icarus</a>
+                </p>
+            </div>
+            <div class="level-end">
+            
+                <div class="field has-addons is-flex-center-mobile has-mt-5-mobile is-flex-wrap is-flex-middle">
+                
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" title="Creative Commons" href="https://creativecommons.org/">
+                        
+                        <i class="fab fa-creative-commons"></i>
+                        
+                    </a>
+                </p>
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/">
+                        
+                        <i class="fab fa-creative-commons-by"></i>
+                        
+                    </a>
+                </p>
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" title="Download on GitHub" href="http://github.com/ppoffice/hexo-theme-icarus">
+                        
+                        <i class="fab fa-github"></i>
+                        
+                    </a>
+                </p>
+                
+                </div>
+            
+            </div>
+        </div>
+    </div>
+</footer>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script>
+<script>moment.locale("ja");</script>
+
+
+    
+    
+    
+    <script src="/js/animation.js"></script>
+    
+
+    
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/js/lightgallery.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/js/jquery.justifiedGallery.min.js" defer></script>
+    <script src="/js/gallery.js" defer></script>
+    
+
+    
+    
+
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update
+            my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.js" defer></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        });
+    });
+</script>
+
+
+    
+    
+<script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    MathJax.Hub.Config({
+        'HTML-CSS': {matchFontHeight: false},
+        SVG: {matchFontHeight: false},
+        CommonHTML: {matchFontHeight: false}
+    });
+});
+</script>
+
+    
+    
+
+<a id="back-to-top" title="Back to Top" href="javascript:;">
+    <i class="fas fa-chevron-up"></i>
+</a>
+<script src="/js/back-to-top.js" defer></script>
+
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script>
+    <script src="/js/clipboard.js" defer></script>
+    
+
+    
+
+
+<script src="/js/main.js" defer></script>
+
+    
+    <div class="searchbox ins-search">
+    <div class="searchbox-container ins-search-container">
+        <div class="searchbox-input-wrapper">
+            <input type="text" class="searchbox-input ins-search-input" placeholder="Type something...">
+            <span class="searchbox-close ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="searchbox-result-wrapper ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: '投稿',
+                PAGES: 'Pages',
+                CATEGORIES: 'カテゴリ',
+                TAGS: 'タグ',
+                UNTITLED: '(Untitled)',
+            },
+            CONTENT_URL: '/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
+<script src="/js/insight.js" defer></script>
+<link rel="stylesheet" href="/css/search.css">
+<link rel="stylesheet" href="/css/insight.css">
+    
+</body>
+</html>
