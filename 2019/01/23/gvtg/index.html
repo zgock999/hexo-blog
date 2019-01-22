@@ -15,10 +15,12 @@
 <meta property="og:site_name" content="それすらもコアの果て">
 <meta property="og:description" content="KVMやXenといったLinuxハイバーバイザ上のVMでGPUを使用する場合、GPUパススルーを用いてVM一つにGPUをまるごと渡してしまうのが個人ユースでは一般的です GPUパススルーを用いた場合、VM一つがGPUを専有してしまうため、使用できるVMの数に制約があったり、そもそもノートPCのように物理的にGPUが増設できない環境が存在したりと制約が多いのが難点でした これまでも一部のエンタープラ">
 <meta property="og:locale" content="ja">
-<meta property="og:updated_time" content="2019-01-22T21:23:54.797Z">
+<meta property="og:image" content="https://blog.zgock-lab.net/uploads/gvtg-shot1.png">
+<meta property="og:updated_time" content="2019-01-22T22:05:45.937Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その１">
 <meta name="twitter:description" content="KVMやXenといったLinuxハイバーバイザ上のVMでGPUを使用する場合、GPUパススルーを用いてVM一つにGPUをまるごと渡してしまうのが個人ユースでは一般的です GPUパススルーを用いた場合、VM一つがGPUを専有してしまうため、使用できるVMの数に制約があったり、そもそもノートPCのように物理的にGPUが増設できない環境が存在したりと制約が多いのが難点でした これまでも一部のエンタープラ">
+<meta name="twitter:image" content="https://blog.zgock-lab.net/uploads/gvtg-shot1.png">
 
 
 
@@ -62,6 +64,15 @@
 
     
     
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-132917273-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-132917273-1');
+</script>
+
 
     
     
@@ -151,7 +162,7 @@
         
         <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
             <div class="level-left">
-                <time class="level-item has-text-grey" datetime="2019-01-22T21:23:54.797Z">2019-01-23</time>
+                <time class="level-item has-text-grey" datetime="2019-01-22T22:05:45.937Z">2019-01-23</time>
                 
                 <div class="level-item">
                 <a class="has-link-grey -link" href="/categories/Linux/">Linux</a>&nbsp;/&nbsp;<a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
@@ -161,7 +172,7 @@
                 <span class="level-item has-text-grey">
                     
                     
-                    10分 read (About 1499 words)
+                    10分 read (About 1504 words)
                 </span>
                 
             </div>
@@ -206,6 +217,7 @@
 <p>kvmgtとvfio-mdevが今回のキーモジュールです</p>
 <h2><span id="カーネルパラーメータの設定">カーネルパラーメータの設定</span></h2><p>YaST &gt; システム &gt; ブートローダーを呼び出し、カーネルパラメータに<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">i915.enable_gvt=1 kvm_ignore_msrs=1 intel_iommu=1</span><br></pre></td></tr></table></figure></p>
 <p>を追加し、GVT-gを有効にします</p>
+<p><img src="/uploads/gvtg-shot1.png" alt="screenshot"></p>
 <p>設定後、再起動して</p>
 <figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$sudo lspci</span><br><span class="line">00:00.0 Host bridge: Intel Corporation Xeon E3-1200 v5/E3-1500 v5/6th Gen Core Processor Host Bridge/DRAM Registers (rev 08)</span><br><span class="line">00:02.0 VGA compatible controller: Intel Corporation Skylake GT2 [HD Graphics 520] (rev 07)</span><br><span class="line">00:04.0 Signal processing controller: Intel Corporation Xeon E3-1200 v5/E3-1500 v5/6th Gen Core Processor Thermal Subsystem (rev 08)</span><br><span class="line">00:14.0 USB controller: Intel Corporation Sunrise Point-LP USB 3.0 xHCI Controller (rev 21)</span><br><span class="line">〜以下略〜</span><br></pre></td></tr></table></figure>
 <p>でGPUのPCIアドレスを確認したら</p>
@@ -476,7 +488,7 @@
             
             <div class="media-content">
                 <div class="content">
-                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-01-22T21:23:54.797Z">2019-01-23</time></div>
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-01-22T22:05:45.937Z">2019-01-23</time></div>
                     <a href="/2019/01/23/gvtg/" class="has-link-black-ter is-size-6">openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その１</a>
                     <p class="is-size-7 is-uppercase">
                         <a class="has-link-grey -link" href="/categories/Linux/">Linux</a> / <a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
@@ -660,7 +672,7 @@
             
             <div class="media-content">
                 <div class="content">
-                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-01-22T21:23:54.797Z">2019-01-23</time></div>
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-01-22T22:05:45.937Z">2019-01-23</time></div>
                     <a href="/2019/01/23/gvtg/" class="has-link-black-ter is-size-6">openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その１</a>
                     <p class="is-size-7 is-uppercase">
                         <a class="has-link-grey -link" href="/categories/Linux/">Linux</a> / <a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
