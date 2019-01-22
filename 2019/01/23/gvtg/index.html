@@ -178,8 +178,16 @@
 <p>これまでも一部のエンタープライズ向けGPUではGPUの共有機能はサポートされていましたが、最近のカーネル（実用レベルになってきたのは4.18ぐらいから）ではIntel GVT-gと呼ばれるIntel iGPUの共有機能が使えるようになってきました。</p>
 <p>今回はopenSUSE Tumbleweedを用いてGVT-gによる複数VMでのGPU共有を行ってみます</p>
  <a id="more"></a>
- <!-- toc -->
-<h2 id="テスト環境"><a href="#テスト環境" class="headerlink" title="テスト環境"></a>テスト環境</h2><p>現時点のカーネル(4.20)ではGVT-gはBroadwell〜KabyLakeまでのGPUしかサポートされていません</p>
+<!-- toc -->
+<ul>
+<li><a href="#テスト環境">テスト環境</a></li>
+<li><a href="#initramfsへのモジュール展開">initramfsへのモジュール展開</a></li>
+<li><a href="#カーネルパラーメータの設定">カーネルパラーメータの設定</a></li>
+<li><a href="#共有gpuの確保と開放">共有GPUの確保と開放</a></li>
+<li><a href="#サービス化">サービス化</a></li>
+</ul>
+<!-- tocstop -->
+<h2><span id="テスト環境">テスト環境</span></h2><p>現時点のカーネル(4.20)ではGVT-gはBroadwell〜KabyLakeまでのGPUしかサポートされていません</p>
 <p>カーネル4.21(仮)でCoffeeLakeに対応する予定（Intelがプルリク投げている）です</p>
 <p>ということで、SkyLake世代のノートPCでテストしてみました</p>
 <p>大須のPCコンフルの初売りで29800円でしたが、SkyLake世代の中古PCも値頃になってきましたね</p>
@@ -192,11 +200,11 @@
 </li>
 </ul>
 <p>とりあえずYaSTなりでvirt-manager経由でVMの制御が行えていることを前提とします</p>
-<h2 id="initramfsへのモジュール展開"><a href="#initramfsへのモジュール展開" class="headerlink" title="initramfsへのモジュール展開"></a>initramfsへのモジュール展開</h2><p>まずはGVT-gを使うために必要なカーネルモジュールの準備をします。</p>
+<h2><span id="initramfsへのモジュール展開">initramfsへのモジュール展開</span></h2><p>まずはGVT-gを使うために必要なカーネルモジュールの準備をします。</p>
 <p>ブート時点で関連モジュールが必要になるため、dracut.confに必要なモジュールを列挙してinitramfsに突っ込んでおきます</p>
 <figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># echo &quot;drivers+=\&quot;kvmgt vfio-iommu-type1 vfio-mdev\&quot;&quot; &gt; /etc/dracut.conf.d/98-gvtg.conf</span><br></pre></td></tr></table></figure>
 <p>vfio-mdevが今回のキーモジュールです</p>
-<h2 id="カーネルパラーメータの設定"><a href="#カーネルパラーメータの設定" class="headerlink" title="カーネルパラーメータの設定"></a>カーネルパラーメータの設定</h2><p>YaST &gt; システム &gt; ブートローダーを呼び出し、カーネルパラメータに<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">i915.enable_gvt=1 kvm_ignore_msrs=1 intel_iommu=1</span><br></pre></td></tr></table></figure></p>
+<h2><span id="カーネルパラーメータの設定">カーネルパラーメータの設定</span></h2><p>YaST &gt; システム &gt; ブートローダーを呼び出し、カーネルパラメータに<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">i915.enable_gvt=1 kvm_ignore_msrs=1 intel_iommu=1</span><br></pre></td></tr></table></figure></p>
 <p>を追加し、GVT-gを有効にします</p>
 <p>設定後、再起動して</p>
 <figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$sudo lspci</span><br><span class="line">00:00.0 Host bridge: Intel Corporation Xeon E3-1200 v5/E3-1500 v5/6th Gen Core Processor Host Bridge/DRAM Registers (rev 08)</span><br><span class="line">00:02.0 VGA compatible controller: Intel Corporation Skylake GT2 [HD Graphics 520] (rev 07)</span><br><span class="line">00:04.0 Signal processing controller: Intel Corporation Xeon E3-1200 v5/E3-1500 v5/6th Gen Core Processor Thermal Subsystem (rev 08)</span><br><span class="line">00:14.0 USB controller: Intel Corporation Sunrise Point-LP USB 3.0 xHCI Controller (rev 21)</span><br><span class="line">〜以下略〜</span><br></pre></td></tr></table></figure>
@@ -212,13 +220,13 @@
 <li>weight = この共有GPU一つで専有する共有GPU枠</li>
 </ul>
 <p>なので、今回の環境では1920x1080、VRAM128MB〜512MBが１枚、もしくは1024x768、VRAM64MB〜384MBが２枚取れることがわかります</p>
-<h2 id="共有GPUの確保と開放"><a href="#共有GPUの確保と開放" class="headerlink" title="共有GPUの確保と開放"></a>共有GPUの確保と開放</h2><p>共有GPUを確保するためには<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &apos;[任意のUUID]&apos; &gt; /sys/devices/[GPUのPCIアドレス]/mdev_supported_types/[共有GPU]/create</span><br></pre></td></tr></table></figure></p>
+<h2><span id="共有gpuの確保と開放">共有GPUの確保と開放</span></h2><p>共有GPUを確保するためには<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &apos;[任意のUUID]&apos; &gt; /sys/devices/[GPUのPCIアドレス]/mdev_supported_types/[共有GPU]/create</span><br></pre></td></tr></table></figure></p>
 <p>を行います。成功すれば<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls /sys/device/[GPUのPCIアドレス]/</span><br></pre></td></tr></table></figure></p>
 <p>でデバイスディレクトリ下に与えたUUIDのディレクトリが登場します。<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ ls -l /sys/devices/pci0000\:00/0000\:00\:02.0/</span><br><span class="line">合計 0</span><br><span class="line">drwxr-xr-x 4 root root         0  1月 23 04:14 ab8c3af8-8366-449d-8489-fe9254e44621 ←こいつ</span><br><span class="line">-r--r--r-- 1 root root      4096  1月 23 04:14 ari_enabled</span><br><span class="line">-r--r--r-- 1 root root      4096  1月 23 04:14 boot_vga</span><br><span class="line">-rw-r--r-- 1 root root      4096  1月 23 04:14 broken_parity_status</span><br><span class="line">-r--r--r-- 1 root root      4096  1月 23 04:14 class</span><br><span class="line">-rw-r--r-- 1 root root      4096  1月 23 04:14 config</span><br><span class="line">〜以下略〜</span><br></pre></td></tr></table></figure></p>
 <p>確保した共有GPUを開放するには<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &apos;1&apos; &gt; /sys/devices/[GPUのPCIアドレス]/[確保の時使ったUUID]/remove</span><br></pre></td></tr></table></figure></p>
 <p>を行います</p>
 <p>UUIDはuuidgenなりで適当に決めてください</p>
-<h2 id="サービス化"><a href="#サービス化" class="headerlink" title="サービス化"></a>サービス化</h2><p>システム起動時に共有GPUを自動で確保できるようにsystemdサービスを作ります</p>
+<h2><span id="サービス化">サービス化</span></h2><p>システム起動時に共有GPUを自動で確保できるようにsystemdサービスを作ります</p>
 <p>/usr/lib/systemd/systemの下に任意のサービス名でserviceファイルを作ります</p>
 <p>今回はgvtgpu.serviceということで</p>
 <figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ cat /usr/lib/systemd/system/gvtgpu.service </span><br><span class="line"></span><br><span class="line">[Unit]</span><br><span class="line">Description=Create Intel GVT-g vGPU</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">Type=oneshot</span><br><span class="line">ExecStart=/bin/sh -c &quot;echo &apos;ab8c3af8-8366-449d-8489-fe9254e44621&apos; &gt; /sys/devices/pci0000:00/0000:00:02.0/mdev_supported_types/i915-GVTg_V5_4/create&quot;</span><br><span class="line">ExecStop=/bin/sh -c &quot;echo &apos;1&apos; &gt; /sys/devices/pci0000:00/0000:00:02.0/ab8c3af8-8366-449d-8489-fe9254e44621/remove&quot;</span><br><span class="line">RemainAfterExit=yes</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=graphical.target</span><br></pre></td></tr></table></figure>
