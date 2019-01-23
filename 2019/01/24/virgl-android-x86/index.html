@@ -2,18 +2,32 @@
 <html lang="ja">
 <head><meta name="generator" content="Hexo 3.8.0">
     <meta charset="utf-8">
-<title>カテゴリ: Linux - それすらもコアの果て</title>
+<title>virtio-gpu環境でopenGL-ES入りandroid-x86を動かす - それすらもコアの果て</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
 
 
-    <meta property="og:type" content="website">
-<meta property="og:title" content="それすらもコアの果て">
-<meta property="og:url" content="https://blog.zgock-lab.net/categories/Linux/index.html">
+    <meta name="description" content="android-x86の8.1r1が出たので、KVM環境で動かしてみました。 Linuxデスクトップ上でAndroidアプリを動かす試みとしてはanboxとかもあり、これもコンテナの下で動くAndroidということで非常に興味深いプロジェクトですが、まだopenSUSE上でまともに動かすことに成功していないのと、この間arch上で動いているanboxを東海道らぐの会合で見ましたが、まだまともに動か">
+<meta name="keywords" content="openSUSE,KVM,gpu,Linux,仮想化,VirGL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="virtio-gpu環境でopenGL-ES入りandroid-x86を動かす">
+<meta property="og:url" content="https://blog.zgock-lab.net/2019/01/24/virgl-android-x86/index.html">
 <meta property="og:site_name" content="それすらもコアの果て">
+<meta property="og:description" content="android-x86の8.1r1が出たので、KVM環境で動かしてみました。 Linuxデスクトップ上でAndroidアプリを動かす試みとしてはanboxとかもあり、これもコンテナの下で動くAndroidということで非常に興味深いプロジェクトですが、まだopenSUSE上でまともに動かすことに成功していないのと、この間arch上で動いているanboxを東海道らぐの会合で見ましたが、まだまともに動か">
 <meta property="og:locale" content="ja">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/24/virgl-android-x86/shot1.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/24/virgl-android-x86/shot2.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/24/virgl-android-x86/shot3.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/24/virgl-android-x86/shot4.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/24/virgl-android-x86/shot5.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/24/virgl-android-x86/shot6.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/24/virgl-android-x86/shot7.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/24/virgl-android-x86/shot8.png">
+<meta property="og:updated_time" content="2019-01-23T22:56:05.768Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="それすらもコアの果て">
+<meta name="twitter:title" content="virtio-gpu環境でopenGL-ES入りandroid-x86を動かす">
+<meta name="twitter:description" content="android-x86の8.1r1が出たので、KVM環境で動かしてみました。 Linuxデスクトップ上でAndroidアプリを動かす試みとしてはanboxとかもあり、これもコンテナの下で動くAndroidということで非常に興味深いプロジェクトですが、まだopenSUSE上でまともに動かすことに成功していないのと、この間arch上で動いているanboxを東海道らぐの会合で見ましたが、まだまともに動か">
+<meta name="twitter:image" content="https://blog.zgock-lab.net/2019/01/24/virgl-android-x86/shot1.png">
 
 
 
@@ -92,7 +106,7 @@
         <div class="navbar-brand is-flex-center">
             <a class="navbar-item navbar-logo" href="/">
             
-                <img src="/uploads/banner.jpg" alt="それすらもコアの果て" height="28">
+                <img src="/uploads/banner.jpg" alt="virtio-gpu環境でopenGL-ES入りandroid-x86を動かす" height="28">
             
             </a>
         </div>
@@ -144,23 +158,11 @@
         <div class="container">
             <div class="columns">
                 <div class="column is-8-tablet is-8-desktop is-6-widescreen has-order-2 column-main"><div class="card">
-    <div class="card-content">
-        <nav class="breadcrumb" aria-label="breadcrumbs">
-        <ul>
-            <li><a href="/categories">カテゴリ</a></li>
-            
-            <li class="is-active"><a href="#" aria-current="page">Linux</a></li>
-        </ul>
-        </nav>
-    </div>
-</div>
-
-    <div class="card">
     
     <div class="card-image">
-        <a href="/2019/01/24/virgl-android-x86/" class="image is-7by1">
+        <span class="image is-7by1">
             <img class="thumbnail" src="/uploads/opensuse.png" alt="virtio-gpu環境でopenGL-ES入りandroid-x86を動かす">
-        </a>
+        </span>
     </div>
     
     <div class="card-content article ">
@@ -185,144 +187,80 @@
         
         <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
             
-                <a class="has-link-black-ter" href="/2019/01/24/virgl-android-x86/">virtio-gpu環境でopenGL-ES入りandroid-x86を動かす</a>
+                virtio-gpu環境でopenGL-ES入りandroid-x86を動かす
             
         </h1>
         <div class="content">
             <p>android-x86の8.1r1が出たので、KVM環境で動かしてみました。</p>
 <p>Linuxデスクトップ上でAndroidアプリを動かす試みとしては<a href="https://anbox.io/" target="_blank" rel="noopener">anbox</a>とかもあり、これもコンテナの下で動くAndroidということで非常に興味深いプロジェクトですが、まだopenSUSE上でまともに動かすことに成功していないのと、この間arch上で動いているanboxを<a href="https://tokaidolug.colorfultime.net/" target="_blank" rel="noopener">東海道らぐ</a>の会合で見ましたが、まだまともに動かないアプリも結構あり、じゃあ最近のKVM環境で動かしたらどうなんかなということで試してみました。</p>
 <p>今回はGPUおたくらしくvirtio-gpu(<a href="https://virgil3d.github.io/" target="_blank" rel="noopener">VirGL3d</a>)を使ってopenGL-ESを有効にしたandroid-x86を動かしてみます</p>
-        </div>
-        
-        
-        <div class="level is-mobile">
-            <div class="level-start">
-                <div class="level-item">
-                <a class="button is-size-7 is-light" href="/2019/01/24/virgl-android-x86/#more">Read More</a>
-                </div>
-            </div>
-        </div>
-        
-        
-    </div>
-</div>
-
-
-
-
-
-
-
-
-    <div class="card">
-    
-    <div class="card-image">
-        <a href="/2019/01/23/gvtg/" class="image is-7by1">
-            <img class="thumbnail" src="/uploads/opensuse.png" alt="openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その１">
-        </a>
-    </div>
-    
-    <div class="card-content article ">
-        
-        <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
-            <div class="level-left">
-                <time class="level-item has-text-grey" datetime="2019-01-22T22:05:00.000Z">2019-01-23</time>
-                
-                <div class="level-item">
-                <a class="has-link-grey -link" href="/categories/Linux/">Linux</a>&nbsp;/&nbsp;<a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
-                </div>
-                
-                
-                <span class="level-item has-text-grey">
-                    
-                    
-                    10分 read (About 1509 words)
-                </span>
-                
-            </div>
-        </div>
-        
-        <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
-            
-                <a class="has-link-black-ter" href="/2019/01/23/gvtg/">openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その１</a>
-            
-        </h1>
-        <div class="content">
-            <p>KVMやXenといったLinuxハイバーバイザ上のVMでGPUを使用する場合、GPUパススルーを用いてVM一つにGPUをまるごと渡してしまうのが個人ユースでは一般的です</p>
-<p>GPUパススルーを用いた場合、VM一つがGPUを専有してしまうため、使用できるVMの数に制約があったり、そもそもノートPCのように物理的にGPUが増設できない環境が存在したりと制約が多いのが難点でした</p>
-<p>これまでも一部のエンタープライズ向けGPUではGPUの共有機能はサポートされていましたが、最近のカーネル（実用レベルになってきたのは4.18ぐらいから）ではIntel GVT-gと呼ばれるIntel iGPUの共有機能が使えるようになってきました。</p>
-<p>今回はopenSUSE Tumbleweedを用いてGVT-gによる複数VMでのGPU共有を行ってみます</p>
-        </div>
-        
-        
-        <div class="level is-mobile">
-            <div class="level-start">
-                <div class="level-item">
-                <a class="button is-size-7 is-light" href="/2019/01/23/gvtg/#more">Read More</a>
-                </div>
-            </div>
-        </div>
-        
-        
-    </div>
-</div>
-
-
-
-
-
-
-
-
-    <div class="card">
-    
-    <div class="card-image">
-        <a href="/2019/01/22/ffmpeg-nvenc/" class="image is-7by1">
-            <img class="thumbnail" src="/uploads/opensuse.png" alt="openSUSE Leap 15でNVENCを有効にしたffmpegをビルドし、mpeg2-tsのGPUエンコードを行う">
-        </a>
-    </div>
-    
-    <div class="card-content article ">
-        
-        <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
-            <div class="level-left">
-                <time class="level-item has-text-grey" datetime="2019-01-22T04:13:18.000Z">2019-01-22</time>
-                
-                <div class="level-item">
-                <a class="has-link-grey -link" href="/categories/Linux/">Linux</a>&nbsp;/&nbsp;<a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
-                </div>
-                
-                
-                <span class="level-item has-text-grey">
-                    
-                    
-                    26分 read (About 3959 words)
-                </span>
-                
-            </div>
-        </div>
-        
-        <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
-            
-                <a class="has-link-black-ter" href="/2019/01/22/ffmpeg-nvenc/">openSUSE Leap 15でNVENCを有効にしたffmpegをビルドし、mpeg2-tsのGPUエンコードを行う</a>
-            
-        </h1>
-        <div class="content">
-            <ul>
-<li>Gistから転載</li>
+ <a id="more"></a>
+<!-- toc -->
+<ul>
+<li><a href="#virtio-gpuvirgl3dとは">virtio-gpu(VirGL3D)とは</a></li>
+<li><a href="#テスト環境">テスト環境</a></li>
+<li><a href="#isoのダウンロード">ISOのダウンロード</a></li>
+<li><a href="#ゲストの作成">ゲストの作成</a></li>
+<li><a href="#virtio-gpuを設定する">virtio-gpuを設定する</a></li>
+<li><a href="#動かしてみて">動かしてみて</a></li>
+<li><a href="#まとめ">まとめ</a></li>
 </ul>
-<p>Nvidia GPUが存在するLinux環境では、NVIDIAのハードウェアエンコーディング/デコーディング機能であるNVENC/NVDECが利用可能ですが、openSUSEの標準パッケージとして利用可能なffmpegではNVENC/NVDECが有効化されていません。これはNVIDIAのライセンス規約により同機能を有効にしたffmpegのバイナリ再配布が許されていないためです。(おそらくほとんどのディストリビューション添付のffmpegも同じはず）</p>
-<p>そこで、ffmpegをソースからビルドし、NVENC/NVDECを使えるようにします</p>
+<!-- tocstop -->
+<h2><span id="virtio-gpuvirgl3dとは">virtio-gpu(VirGL3D)とは</span></h2><p>VirGL3Dとは仮想環境でGPUを扱うための準仮想化システムであり、GPUパススルーやGPU共有と異なり、独自のAPIを持った独立GPUとして扱うものです。</p>
+<p>VMWareやVirtualboxの仮想GPUなどとほぼ同じものと考えて良いでしょう</p>
+<p>まだWindows Driverが未完成（openGLは動き始めたがDirectXが動かない）だったりと発展途上のプロジェクトではありますが、X11やAndoroidではそこそこまっとうに動くようになってきています</p>
+<h2><span id="テスト環境">テスト環境</span></h2><p>今回もパッケージが新しければ新しいほど良いという感じの実験なのでopenSUSE Tumbleweedを使います</p>
+<ul>
+<li>DELL Latitude E5470<ul>
+<li>CPU: Intel Core i5 6200U</li>
+<li>GPU: Intel UHD Graphics 520</li>
+<li>Mem: 8GB</li>
+<li>OS: openSUSE Tumbleweed x86_64</li>
+<li>qemu: 3.1.0</li>
+</ul>
+</li>
+</ul>
+<p>例によってvirt-managerでVMの制御ができるようにまではなっている前提で。</p>
+<h2><span id="isoのダウンロード">ISOのダウンロード</span></h2><p><a href="http://www.android-x86.org/" target="_blank" rel="noopener">android-x86公式</a>から<a href="https://osdn.net/projects/android-x86/downloads/69704/android-x86-8.1-r1.iso/" target="_blank" rel="noopener">8.1r1のx86-64版iso</a>をダウンロードします</p>
+<h2><span id="ゲストの作成">ゲストの作成</span></h2><p>virt-managerからisoを選んでゲストのインストールを行います</p>
+<p>もともと古いPC等に入れて使うことを想定されていることもあり、デフォルトテンプレートで一番相性が良いテンプレートが<strong>Windows 10</strong>だったりしますのでそうします</p>
+<p><img src="shot1.png" alt="shot1"></p>
+<p>あとは粛々とウィザードを最後まで進めて行けばOKですが、最後の「インストール前に設定を確認する」にチェックを入れてください</p>
+<p><img src="shot2.png" alt="shot2"></p>
+<h2><span id="virtio-gpuを設定する">virtio-gpuを設定する</span></h2><p>「インストール前に設定を確認する」にチェックを入れて完了すると、そのままVMの設定が開きますので、「ディスプレイ：Spiceを選びます」</p>
+<p>ここでリッスンタイプを「なし」にして、「GLを開く」をONにすると、レンダリングを受け持つGPUが出てきますので、Intel HD Graphicsを選びます</p>
+<p><strong>残念ながら、2019-1-23現在、AMDのGPUはlibvirtからvirtio-gpuのレンダリングデバイスに指定しても動かないので注意してください</strong></p>
+<p>これはmesaの仕様で、GLSLシェーダーキャッシュをディスク上に作ろうとしますが、libvirtでは現在そのあたりを考慮せず存在しないディレクトリにキャッシュを作ろうとして起動に失敗します</p>
+<p>（コマンドラインからqemuを直に呼べばいけると思いますが未検証）</p>
+<p><img src="shot3.png" alt="shot3"></p>
+<p>続いて、ビデオを選び、「モデル」にvirtioを選んで3DアクセラレーションをONにします</p>
+<p><img src="shot4.png" alt="shot4"></p>
+<p>これで「インストールを開始」を選べばandroid-x86のライブCDが起動するはずですが、時々libvirtのバグでEGLデバイスが確保的ないというエラーが出ることがあります</p>
+<p><img src="shot5.png" alt="shot5"></p>
+<p>ディスプレイの設定画面に再度戻るとデバイスを設定したはずなのに、デバイスが「自動」になっていますので改めてデバイスを指定してください</p>
+<p>あとは普通にライブが起動するはずなので、普通にインストールすればOKです</p>
+<p><img src="shot6.png" alt="shot6"></p>
+<p>Android x86のインストール手順そのものはぐぐればいくらでも出てくると思いますので割愛します</p>
+<h2><span id="動かしてみて">動かしてみて</span></h2><p>OSそのものはかなりサクサク動きます。</p>
+<p>（正直手元の古いAndroid4.4タブレットより軽いんじゃないか説）</p>
+<p>ゲーム類は、そもそも起動しないタイトルがあったり、マウス操作を受け付けないタイトルがあったりはしますが、マウス操作でいけるタイプのタイトルであれば予想以上に実用レベルで動きます</p>
+<p>以下のスクリーンショットは、検証用に適当にPlayストアから拾ってきた「ドールズフロントライン」というゲームですが、割と軽めの2Dゲームということもあり全く問題なく動きました</p>
+<p><img src="shot7.png" alt="shot7"></p>
+<p>スワイプ動作を受け付けないため、カメラ操作ができませんが、「カスタムキャスト」あたりのかなり重いタイトルでも動くには動いています</p>
+<p><img src="shot8.png" alt="shot8"></p>
+<h2><span id="まとめ">まとめ</span></h2><p>VirGL3Dを使うことで、制約はあれこれありますが、openGL-ESが使える仮想android環境がopenSUSE TumbleweedのKVMで割と簡単に実現できますので、よろしければぜひ一度お試しください</p>
+
         </div>
         
-        
-        <div class="level is-mobile">
+        <div class="level is-size-7 is-uppercase">
             <div class="level-start">
                 <div class="level-item">
-                <a class="button is-size-7 is-light" href="/2019/01/22/ffmpeg-nvenc/#more">Read More</a>
+                    <span class="is-size-6 has-text-grey has-mr-7">#</span>
+                    <a class="has-link-grey -link" href="/tags/KVM/">KVM</a>, <a class="has-link-grey -link" href="/tags/Linux/">Linux</a>, <a class="has-link-grey -link" href="/tags/VirGL/">VirGL</a>, <a class="has-link-grey -link" href="/tags/gpu/">gpu</a>, <a class="has-link-grey -link" href="/tags/openSUSE/">openSUSE</a>, <a class="has-link-grey -link" href="/tags/仮想化/">仮想化</a>
                 </div>
             </div>
         </div>
+        
         
         
     </div>
@@ -332,7 +270,26 @@
 
 
 
-
+<div class="card card-transparent">
+    <div class="level post-navigation is-flex-wrap is-mobile">
+        
+        <div class="level-start">
+            <a class="level level-item has-link-grey  article-nav-prev" href="/2999/12/31/firstpost/">
+                <i class="level-item fas fa-chevron-left"></i>
+                <span class="level-item">blog建てた</span>
+            </a>
+        </div>
+        
+        
+        <div class="level-end">
+            <a class="level level-item has-link-grey  article-nav-next" href="/2019/01/23/gvtg/">
+                <span class="level-item">openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その１</span>
+                <i class="level-item fas fa-chevron-right"></i>
+            </a>
+        </div>
+        
+    </div>
+</div>
 
 
 </div>
@@ -909,7 +866,7 @@
             <div class="level-start has-text-centered-mobile">
                 <a class="footer-logo is-block has-mb-6" href="/">
                 
-                    <img src="/uploads/banner.jpg" alt="それすらもコアの果て" height="28">
+                    <img src="/uploads/banner.jpg" alt="virtio-gpu環境でopenGL-ES入りandroid-x86を動かす" height="28">
                 
                 </a>
                 <p class="is-size-7">
