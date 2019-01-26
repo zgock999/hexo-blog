@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+<title>openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その２ - それすらもコアの果て</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+
+    <meta name="description" content="その１で共有GPUの確保と開放までができるようになりましたので、実際のゲストに適用してみます ついでに？virt-managerでwindowsゲストをインストールする際のおすすめ設定の話とかも">
+<meta name="keywords" content="openSUSE,KVM,GVT-g,gpu,Linux,仮想化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その２">
+<meta property="og:url" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/index.html">
+<meta property="og:site_name" content="それすらもコアの果て">
+<meta property="og:description" content="その１で共有GPUの確保と開放までができるようになりましたので、実際のゲストに適用してみます ついでに？virt-managerでwindowsゲストをインストールする際のおすすめ設定の話とかも">
+<meta property="og:locale" content="ja">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot1.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot2.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot3.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot4.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot5.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot6.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot7.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot8.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot9.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot10.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot11.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot12.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot13.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot14.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot15.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot16.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot17.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot18.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot19.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot20.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot21.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot22.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot23.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot24.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot25.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot26.png">
+<meta property="og:updated_time" content="2019-01-26T04:09:24.821Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その２">
+<meta name="twitter:description" content="その１で共有GPUの確保と開放までができるようになりましたので、実際のゲストに適用してみます ついでに？virt-managerでwindowsゲストをインストールする際のおすすめ設定の話とかも">
+<meta name="twitter:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot1.png">
+
+
+
+
+
+<link rel="icon" href="/images/favicon.svg">
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.7.2/css/bulma.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu:400,600|Source+Code+Pro">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css">
+
+
+    
+    
+    
+    <style>body>.footer,body>.navbar,body>.section{opacity:0}</style>
+    
+
+    
+    
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/css/lightgallery.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/css/justifiedGallery.min.css">
+    
+
+    
+    
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.css">
+
+
+    
+    
+    
+    
+
+<link rel="stylesheet" href="/css/back-to-top.css">
+
+
+    
+    
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-132917273-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-132917273-1');
+</script>
+
+
+    
+    
+    
+    
+
+    
+    
+<link rel="stylesheet" href="/css/progressbar.css">
+<script src="https://cdn.jsdelivr.net/npm/pace-js@1.0.2/pace.min.js"></script>
+
+    
+    
+    
+
+    
+
+
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="is-3-column">
+    <nav class="navbar navbar-main">
+    <div class="container">
+        <div class="navbar-brand is-flex-center">
+            <a class="navbar-item navbar-logo" href="/">
+            
+                <img src="/uploads/banner.jpg" alt="openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その２" height="28">
+            
+            </a>
+        </div>
+        <div class="navbar-menu">
+            
+            <div class="navbar-start">
+                
+                <a class="navbar-item" href="/">Home</a>
+                
+                <a class="navbar-item" href="/archives">Archives</a>
+                
+                <a class="navbar-item" href="/categories">Categories</a>
+                
+                <a class="navbar-item" href="/tags">Tags</a>
+                
+                <a class="navbar-item" href="/about">About</a>
+                
+            </div>
+            
+            <div class="navbar-end">
+                
+                    
+                    
+                    <a class="navbar-item" target="_blank" title="Follow on Mastodon" href="https://mstdn.maud.io/@zgock999">
+                        
+                        <i class="fab fa-mastodon"></i>
+                        
+                    </a>
+                    
+                    <a class="navbar-item" target="_blank" title="Download on GitHub" href="http://github.com/ppoffice/hexo-theme-icarus">
+                        
+                        <i class="fab fa-github"></i>
+                        
+                    </a>
+                    
+                
+                
+                
+                <a class="navbar-item search" title="Search" href="javascript:;">
+                    <i class="fas fa-search"></i>
+                </a>
+                
+            </div>
+        </div>
+    </div>
+</nav>
+    
+    <section class="section">
+        <div class="container">
+            <div class="columns">
+                <div class="column is-8-tablet is-8-desktop is-6-widescreen has-order-2 column-main"><div class="card">
+    
+    <div class="card-image">
+        <span class="image is-7by1">
+            <img class="thumbnail" src="/uploads/opensuse.png" alt="openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その２">
+        </span>
+    </div>
+    
+    <div class="card-content article ">
+        
+        <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
+            <div class="level-left">
+                <time class="level-item has-text-grey" datetime="2019-01-25T19:14:23.000Z">2019-01-26</time>
+                
+                <div class="level-item">
+                <a class="has-link-grey -link" href="/categories/Linux/">Linux</a>&nbsp;/&nbsp;<a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
+                </div>
+                
+                
+                <span class="level-item has-text-grey">
+                    
+                    
+                    20分 read (About 3043 words)
+                </span>
+                
+            </div>
+        </div>
+        
+        <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
+            
+                openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その２
+            
+        </h1>
+        <div class="content">
+            <p><a href="/gvtg">その１</a>で共有GPUの確保と開放までができるようになりましたので、実際のゲストに適用してみます</p>
+<p>ついでに？virt-managerでwindowsゲストをインストールする際のおすすめ設定の話とかも</p>
+ <a id="more"></a>
+<!-- toc -->
+<ul>
+<li><a href="#qemuゲストの設定">QEMUゲストの設定</a><ul>
+<li><a href="#インストールメディアの準備">インストールメディアの準備</a></li>
+<li><a href="#設定のカスタマイズ">設定のカスタマイズ</a><ul>
+<li><a href="#概要">概要</a></li>
+<li><a href="#cpu数">CPU数</a></li>
+<li><a href="#ストレージ">ストレージ</a></li>
+<li><a href="#cdrom">CDROM</a></li>
+<li><a href="#nic">NIC</a></li>
+<li><a href="#ディスプレイ">ディスプレイ</a></li>
+<li><a href="#コントローラ">コントローラ</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#windowsゲストのインストール">Windowsゲストのインストール</a><ul>
+<li><a href="#virtioドライバのロード">VirtIOドライバのロード</a></li>
+</ul>
+</li>
+<li><a href="#gvtデバイスの設定第一段階">GVTデバイスの設定（第一段階）</a><ul>
+<li><a href="#hostdevの追加">hostdevの追加</a></li>
+<li><a href="#intelドライバのインストール">Intelドライバのインストール</a></li>
+</ul>
+</li>
+<li><a href="#gvtデバイスの設定第二段階">GVTデバイスの設定（第二段階）</a><ul>
+<li><a href="#xmlスキーマの変更">XMLスキーマの変更</a></li>
+<li><a href="#標準vgaの無効化">標準VGAの無効化</a></li>
+<li><a href="#gvtデバイスの有効化">GVTデバイスの有効化</a></li>
+</ul>
+</li>
+<li><a href="#起動後の設定">起動後の設定</a><ul>
+<li><a href="#テスト">テスト</a></li>
+</ul>
+</li>
+<li><a href="#まとめ">まとめ</a></li>
+<li><a href="#付録">付録</a></li>
+</ul>
+<!-- tocstop -->
+<h2><span id="qemuゲストの設定">QEMUゲストの設定</span></h2><h3><span id="インストールメディアの準備">インストールメディアの準備</span></h3><p><a href="https://www.microsoft.com/ja-jp/software-download/windows10" target="_blank" rel="noopener">Microsoft公式</a>のメディアクリエイターツールを使用するなりで、Windows10の最新ISOを入手してください</p>
+<p>もう一つ、virtioドライバーディスクを使用するためvirtio driver isoを入手してください</p>
+<p>windows driver isoは<a href="https://docs.fedoraproject.org/en-US/quick-docs/creating-windows-virtual-machines-using-virtio-drivers/index.html" target="_blank" rel="noopener">fedora</a>や<a href="https://launchpad.net/kvm-guest-drivers-windows" target="_blank" rel="noopener">ubuntu</a>が公開していますが、基本的にfedoraのもののほうが開発が活発ですのでfedoraのものを使用した方が良いと思います</p>
+<p>2019-01-23現在の最新は1.1.60でした</p>
+<h3><span id="設定のカスタマイズ">設定のカスタマイズ</span></h3><p> まずはvirt-managerから新規VMを選んでインストールを開始します</p>
+<p> 基本的にウィザードに従って(メモリやストレージ、ネットワーク等は個々の環境に合わせてお好みで)最後まで進めばOKですが、最後に「設定をカスタマイズする」にチェックを入れてください</p>
+<p> <img src="shot1.png" alt="shot1"></p>
+<h4><span id="概要">概要</span></h4><p>ここでBIOS(seabios)起動をするか、UEFI(OVMF)起動をするかを選択します。</p>
+<p>2019-01現在、GVT-gデバイスはseabiosでしか表示が正しく動かないので、必ずBIOSを選択してください</p>
+<p> <img src="shot2.png" alt="shot2"></p>
+<h4><span id="cpu数">CPU数</span></h4><p> ここ、何気に重要なんですが、Windows 10 Pro/Home等では使用できるCPUソケット数に制限がかかっています</p>
+<p> virt-managerで3コア以上の設定をすると、デフォルトで3ソケット1コア1スレッドの設定になってしまうため、windowsでは制限コアしか認識しなくなり、かつ<strong>後からトポロジーを変更してもwindowsが正しく認識してくれません</strong>ので、インストールからやり直しになります</p>
+<p> そのため、この時点でトポロジーを手動設定して実CPUと同じに設定しておきましょう</p>
+<p> 後から「現在の割当」で減らす分には問題ないので、インストール時点ではその環境で使用できる最大CPU数を設定しておくと良いと思います</p>
+<p> <img src="shot3.png" alt="shot3"></p>
+<h4><span id="ストレージ">ストレージ</span></h4><p>今回はvirtioを使用するため、ディスクの設定をデフォルトのSATAから変更します<br>詳細オプションから「SCSI」を選択します<br>ここで「virtio」を選択可能ですが、現在はレガシーな手法とされており、VirtIO SCSIコントローラを使用して制御するのが推奨されています</p>
+<p> <img src="shot4.png" alt="shot4"></p>
+<h4><span id="cdrom">CDROM</span></h4><p>「ハードウェアを追加」からCDROMドライブをもう一台追加し、先程用意したvirtioドライバのisoを設定します<br> <img src="shot5.png" alt="shot5"></p>
+<h4><span id="nic">NIC</span></h4><p>「モデル」から「virtio」を選択します<br>ネットワークソースはNATなりブリッジなりmacvtapなりお好みで</p>
+<p> <img src="shot6.png" alt="shot6"></p>
+<h4><span id="ディスプレイ">ディスプレイ</span></h4><p><a href="/virgl-android-x86">android-x86</a>の時にも設定しましたが、リッスンタイプを「なし」にして、「GLを開く」をONにして、レンダリングデバイスを設定します。</p>
+<p>2019-01現在のvirt-managerのバグで、レンダリングデバイスを指定して「適用」してもデバイスが「自動」に戻ってしまうため、もう一度デバイスを設定して「適用」してください</p>
+<p> <img src="shot7.png" alt="shot7"></p>
+<h4><span id="コントローラ">コントローラ</span></h4><p>「ハードウェアを追加」からVirtIO SCSIコントローラを追加します<br>ここで明示的に追加しないと、libvirtがlsilogicエミュレーションのコントローラを勝手に追加しますのでかならず明示的に追加してください</p>
+<p> <img src="shot8.png" alt="shot8"></p>
+<h2><span id="windowsゲストのインストール">Windowsゲストのインストール</span></h2><p>ここまで設定して「インスール開始」を選べばWindowsインストーラが起動ますので、指示に従ってインストールを開始してください。</p>
+<p> <img src="shot9.png" alt="shot9"></p>
+<h3><span id="virtioドライバのロード">VirtIOドライバのロード</span></h3><p>インストール対象を選ぶ時点で、ストレージをVirtIOにしたので対象ディスクが出てこないはずです</p>
+<p> <img src="shot10.png" alt="shot10"></p>
+<p>ここで「ドライバーの読み込み」から第二CDROMに入れたvirtioドライバーディスクからSCSIコントローラドライバを読み込みます</p>
+<p> <img src="shot11.png" alt="shot11"><br> <img src="shot12.png" alt="shot12"><br> <img src="shot13.png" alt="shot13"></p>
+<p>ドライバを読み込めば、設定したディスクが一覧に出てくるはずです<br> <img src="shot14.png" alt="shot14"></p>
+<p>この時点でネットワーク、グラフィック(QXL)、メモリバルーンのドライバーもロードしておきましょう<br> <img src="shot15.png" alt="shot15"><br> <img src="shot16.png" alt="shot16"><br> <img src="shot17.png" alt="shot17"></p>
+<p>あとはインストーラーの指示に従ってインストールを進めていけば大丈夫です<br> <img src="shot18.png" alt="shot18"><br> <img src="shot19.png" alt="shot19"></p>
+<p>インストールが完了したら、ゲストをシャットダウンして、いよいよGVTデバイスの設定に入ります</p>
+<h2><span id="gvtデバイスの設定第一段階">GVTデバイスの設定（第一段階）</span></h2><p>ここからはvirshを使った作業に入ります。ユーザーからのvirshでは、virt-managerで登録したVMの参照ができないため、ここからはrootシェルでの作業になります<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo -s</span><br></pre></td></tr></table></figure></p>
+<h3><span id="hostdevの追加">hostdevの追加</span></h3><p>virsh list –allで先程登録したVMの名前を確認し、virsh editで設定を開きます<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># virsh list --all</span><br><span class="line"> Id   Name    State</span><br><span class="line">------------------------</span><br><span class="line"> -    win10   shut off</span><br><span class="line"></span><br><span class="line"># virsh edit win10</span><br></pre></td></tr></table></figure></p>
+<p>該当VMのXMLが開いたら、videoタグを検索して、その下あたりに以下のようなタグを挿入します<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;hostdev mode=&apos;subsystem&apos; type=&apos;mdev&apos; managed=&apos;yes&apos; model=&apos;vfio-pci&apos; display=&apos;off&apos;&gt;</span><br><span class="line">  &lt;source&gt;</span><br><span class="line">    &lt;address uuid=&apos;ab8c3af8-8366-449d-8489-fe9254e44621&apos;/&gt;</span><br><span class="line">  &lt;/source&gt;</span><br><span class="line">  &lt;address type=&apos;pci&apos; domain=&apos;0x0000&apos; bus=&apos;0x00&apos; slot=&apos;0x09&apos; function=&apos;0x0&apos;/&gt;</span><br><span class="line">&lt;/hostdev&gt;</span><br></pre></td></tr></table></figure></p>
+<p>uuidは<a href="/gvtg">その１</a>で決めたUUIDになります。addressのslotは他のデバイスと競合しない適当な値に設定してください</p>
+<h3><span id="intelドライバのインストール">Intelドライバのインストール</span></h3><p>タグを挿入後に設定を保存し、ゲストを起動してデバイスマネージャを開きます<br>しばらくするとWindowsがドライバを自動検索して追加したGVTデバイスにIntel HDドライバを割り当てます<br>もし自動で当たらない場合は手動でドライバの更新を行ってください<br> <img src="shot20.png" alt="shot20"></p>
+<p>GVTデバイスにドライバが当たったらゲストをシャットダウンします</p>
+<h2><span id="gvtデバイスの設定第二段階">GVTデバイスの設定（第二段階）</span></h2><p>再びvirshに入ります</p>
+<h3><span id="xmlスキーマの変更">XMLスキーマの変更</span></h3><p>まず先頭のdomainタグに、XMLスキーマを追加します<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;domain type=&apos;kvm&apos;&gt;</span><br></pre></td></tr></table></figure></p>
+<p>を<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;domain type=&apos;kvm&apos; xmlns:qemu=&apos;http://libvirt.org/schemas/domain/qemu/1.0&apos;&gt;</span><br></pre></td></tr></table></figure></p>
+<p>これでXML中にqemuのコマンドラインを直に設定できるようになります</p>
+<h3><span id="標準vgaの無効化">標準VGAの無効化</span></h3><p>まずvideoタグを検索し、<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;video&gt;</span><br><span class="line">  &lt;model type=&apos;qxl&apos; ram=&apos;65536&apos; vram=&apos;65536&apos; vgamem=&apos;16384&apos; heads=&apos;1&apos; primary=&apos;yes&apos;/&gt;</span><br><span class="line">  &lt;address type=&apos;pci&apos; domain=&apos;0x0000&apos; bus=&apos;0x00&apos; slot=&apos;0x02&apos; function=&apos;0x0&apos;/&gt;</span><br><span class="line">&lt;/video&gt;</span><br></pre></td></tr></table></figure></p>
+<p>この部分をQXLからcirrusに変更します<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;video&gt;</span><br><span class="line">  &lt;model type=&apos;cirrus&apos; vram=&apos;16384&apos; heads=&apos;1&apos; primary=&apos;yes&apos;/&gt;</span><br><span class="line">  &lt;address type=&apos;pci&apos; domain=&apos;0x0000&apos; bus=&apos;0x00&apos; slot=&apos;0x01&apos; function=&apos;0x0&apos;/&gt;</span><br><span class="line">&lt;/video&gt;</span><br></pre></td></tr></table></figure></p>
+<p>その後XMLの末尾、/deviceタグと/domainタグの間に以下の記述を追加します<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;qemu:commandline&gt;</span><br><span class="line">  &lt;qemu:arg value=&apos;-set&apos;/&gt;</span><br><span class="line">  &lt;qemu:arg value=&apos;device.video0.driver=ne2k_pci&apos;/&gt;</span><br><span class="line">&lt;/qemu:commandline&gt;</span><br></pre></td></tr></table></figure></p>
+<p>これはlibvirtの仕様で、graphicデバイスが設定されていると、必ず一つのビデオデバイスが追加されてしまうため、そのビデオデバイスに間違ったドライバを当てることであえてエラーを起こしてそのデバイスを無効化するというバッドノウハウです。</p>
+<p>いずれlibvirtでmodel type=’none’が選択できるようになるかもしれません</p>
+<h3><span id="gvtデバイスの有効化">GVTデバイスの有効化</span></h3><p>qemu:commandlineタグに以下を追加します<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;qemu:arg value=&apos;-set&apos;/&gt;</span><br><span class="line">&lt;qemu:arg value=&apos;device.hostdev0.x-igd-opregion=on&apos;/&gt;</span><br></pre></td></tr></table></figure></p>
+<p>これはintel IGD固有のオプションで、これを与えることで物理ディスプレイ出力を有効化します</p>
+<p>GVTデバイスは物理ディスプレイに繋がっていませんが、これをONにすることでqemuのgraphicデバイスに接続可能になります</p>
+<p>続いて、hostdevタグの中の<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;hostdev mode=&apos;subsystem&apos; type=&apos;mdev&apos; managed=&apos;yes&apos; model=&apos;vfio-pci&apos; display=&apos;off&apos;&gt;</span><br></pre></td></tr></table></figure></p>
+<p>のdisplayをonに変更します<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;hostdev mode=&apos;subsystem&apos; type=&apos;mdev&apos; managed=&apos;yes&apos; model=&apos;vfio-pci&apos; display=&apos;on&apos;&gt;</span><br></pre></td></tr></table></figure></p>
+<p>設定を保存しゲストを起動すればGVTデバイスをビデオデバイスとしたゲストが起動します</p>
+<h2><span id="起動後の設定">起動後の設定</span></h2><p>virt-managerからゲストを起動すると、しばらくの間はdevice no readyということで表示されません。</p>
+<p>GVTデバイスはBIOS ROMを持たないため、seabiosがフレームバッファを認識できないためです</p>
+<p><img src="shot21.png" alt="shot21"></p>
+<p>しばらく待って、windowsのIntelドライバがGPUを掴めば表示されます</p>
+<p><a href="/gvtg">その１</a>で確保したGVT_4デバイスはデフォルト解像度が1920x1200なので1920x1200以下のディスプレイで表示した場合、ドット潰れが発生してしまうため、フルスクリーン表示したとしてもドット潰れが発生するため解像度を少し下げます</p>
+<p>GVTデバイス自体が非力ですし、1900x1080のディスプレイであれば1366x768あたりが実用的な解像度でしょう</p>
+<h3><span id="テスト">テスト</span></h3><p><a href="https://wiki.akane.blue/maid" target="_blank" rel="noopener">末代の住民</a>としてはとりあえずまずこれをということでカスタムオーダーメイド３Dの体験版を起動してみました</p>
+<p><img src="shot22.png" alt="shot22"></p>
+<p>画質設定はそれなりに落とす必要はありますがそこそこスムーズに動いています</p>
+<p><img src="shot23.png" alt="shot23"></p>
+<p>もともとノートPCのIntel HDで動かすのは厳しいタイトルなのでスコアはお察しで</p>
+<p>むしろ個人的には良くここまで動いてるなという感じです</p>
+<p>同マシンの素のWindows環境と比べると大体７割ぐらいのスコアでしょうか</p>
+<p><img src="shot24.png" alt="shot24"></p>
+<p>先日steamで購入した「ロロナのアトリエ」も動かしてみました</p>
+<p><img src="shot25.png" alt="shot25"></p>
+<p>こちらはCOM3D2と比較すると相当軽いタイトルなのもあり、普通に遊べるレベルで動いています</p>
+<p><img src="shot26.png" alt="shot26"></p>
+<p>このようにそこそこ軽いタイトルならば普通に遊べるレベルです</p>
+<h2><span id="まとめ">まとめ</span></h2><p>最近になりやっと実用レベルで使えるようになってきたIntel GVT-g、openSUSE Tumbleweedならば比較的簡単に試すことができますので対応iGPUをお持ちの方はぜひ一度お試しください</p>
+<h2><span id="付録">付録</span></h2><p>うちで動いているGVT環境のXMLを参考に貼っておきます<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br></pre></td><td class="code"><pre><span class="line">&lt;domain type=&apos;kvm&apos; id=&apos;3&apos; xmlns:qemu=&apos;http://libvirt.org/schemas/domain/qemu/1.0&apos;&gt;</span><br><span class="line">  &lt;name&gt;win10-gvt1&lt;/name&gt;</span><br><span class="line">  &lt;uuid&gt;9a210b7d-094c-4912-b624-600019bade4a&lt;/uuid&gt;</span><br><span class="line">  &lt;metadata&gt;</span><br><span class="line">    &lt;libosinfo:libosinfo xmlns:libosinfo=&quot;http://libosinfo.org/xmlns/libvirt/domain/1.0&quot;&gt;</span><br><span class="line">      &lt;libosinfo:os id=&quot;http://microsoft.com/win/10&quot;/&gt;</span><br><span class="line">    &lt;/libosinfo:libosinfo&gt;</span><br><span class="line">  &lt;/metadata&gt;</span><br><span class="line">  &lt;memory unit=&apos;KiB&apos;&gt;4194304&lt;/memory&gt;</span><br><span class="line">  &lt;currentMemory unit=&apos;KiB&apos;&gt;4194304&lt;/currentMemory&gt;</span><br><span class="line">  &lt;vcpu placement=&apos;static&apos;&gt;4&lt;/vcpu&gt;</span><br><span class="line">  &lt;resource&gt;</span><br><span class="line">    &lt;partition&gt;/machine&lt;/partition&gt;</span><br><span class="line">  &lt;/resource&gt;</span><br><span class="line">  &lt;os&gt;</span><br><span class="line">    &lt;type arch=&apos;x86_64&apos; machine=&apos;pc-q35-3.1&apos;&gt;hvm&lt;/type&gt;</span><br><span class="line">  &lt;/os&gt;</span><br><span class="line">  &lt;features&gt;</span><br><span class="line">    &lt;acpi/&gt;</span><br><span class="line">    &lt;apic/&gt;</span><br><span class="line">    &lt;hyperv&gt;</span><br><span class="line">      &lt;relaxed state=&apos;on&apos;/&gt;</span><br><span class="line">      &lt;vapic state=&apos;on&apos;/&gt;</span><br><span class="line">      &lt;spinlocks state=&apos;on&apos; retries=&apos;8191&apos;/&gt;</span><br><span class="line">    &lt;/hyperv&gt;</span><br><span class="line">    &lt;vmport state=&apos;off&apos;/&gt;</span><br><span class="line">  &lt;/features&gt;</span><br><span class="line">  &lt;cpu mode=&apos;custom&apos; match=&apos;exact&apos; check=&apos;full&apos;&gt;</span><br><span class="line">    &lt;model fallback=&apos;forbid&apos;&gt;Skylake-Client-IBRS&lt;/model&gt;</span><br><span class="line">    &lt;vendor&gt;Intel&lt;/vendor&gt;</span><br><span class="line">    &lt;topology sockets=&apos;1&apos; cores=&apos;2&apos; threads=&apos;2&apos;/&gt;</span><br><span class="line">    &lt;feature policy=&apos;require&apos; name=&apos;ss&apos;/&gt;</span><br><span class="line">    &lt;feature policy=&apos;require&apos; name=&apos;vmx&apos;/&gt;</span><br><span class="line">    &lt;feature policy=&apos;require&apos; name=&apos;hypervisor&apos;/&gt;</span><br><span class="line">    &lt;feature policy=&apos;require&apos; name=&apos;tsc_adjust&apos;/&gt;</span><br><span class="line">    &lt;feature policy=&apos;require&apos; name=&apos;clflushopt&apos;/&gt;</span><br><span class="line">    &lt;feature policy=&apos;require&apos; name=&apos;umip&apos;/&gt;</span><br><span class="line">    &lt;feature policy=&apos;require&apos; name=&apos;ssbd&apos;/&gt;</span><br><span class="line">    &lt;feature policy=&apos;require&apos; name=&apos;xsaves&apos;/&gt;</span><br><span class="line">    &lt;feature policy=&apos;require&apos; name=&apos;pdpe1gb&apos;/&gt;</span><br><span class="line">    &lt;feature policy=&apos;disable&apos; name=&apos;hle&apos;/&gt;</span><br><span class="line">    &lt;feature policy=&apos;disable&apos; name=&apos;rtm&apos;/&gt;</span><br><span class="line">  &lt;/cpu&gt;</span><br><span class="line">  &lt;clock offset=&apos;localtime&apos;&gt;</span><br><span class="line">    &lt;timer name=&apos;rtc&apos; tickpolicy=&apos;catchup&apos;/&gt;</span><br><span class="line">    &lt;timer name=&apos;pit&apos; tickpolicy=&apos;delay&apos;/&gt;</span><br><span class="line">    &lt;timer name=&apos;hpet&apos; present=&apos;no&apos;/&gt;</span><br><span class="line">    &lt;timer name=&apos;hypervclock&apos; present=&apos;yes&apos;/&gt;</span><br><span class="line">  &lt;/clock&gt;</span><br><span class="line">  &lt;on_poweroff&gt;destroy&lt;/on_poweroff&gt;</span><br><span class="line">  &lt;on_reboot&gt;restart&lt;/on_reboot&gt;</span><br><span class="line">  &lt;on_crash&gt;destroy&lt;/on_crash&gt;</span><br><span class="line">  &lt;pm&gt;</span><br><span class="line">    &lt;suspend-to-mem enabled=&apos;no&apos;/&gt;</span><br><span class="line">    &lt;suspend-to-disk enabled=&apos;no&apos;/&gt;</span><br><span class="line">  &lt;/pm&gt;</span><br><span class="line">  &lt;devices&gt;</span><br><span class="line">    &lt;emulator&gt;/usr/bin/qemu-system-x86_64&lt;/emulator&gt;</span><br><span class="line">    &lt;disk type=&apos;file&apos; device=&apos;disk&apos;&gt;</span><br><span class="line">      &lt;driver name=&apos;qemu&apos; type=&apos;qcow2&apos;/&gt;</span><br><span class="line">      &lt;source file=&apos;/var/lib/libvirt/images/win10.qcow2&apos;/&gt;</span><br><span class="line">      &lt;backingStore/&gt;</span><br><span class="line">      &lt;target dev=&apos;sda&apos; bus=&apos;scsi&apos;/&gt;</span><br><span class="line">      &lt;boot order=&apos;1&apos;/&gt;</span><br><span class="line">      &lt;alias name=&apos;scsi0-0-0-0&apos;/&gt;</span><br><span class="line">      &lt;address type=&apos;drive&apos; controller=&apos;0&apos; bus=&apos;0&apos; target=&apos;0&apos; unit=&apos;0&apos;/&gt;</span><br><span class="line">    &lt;/disk&gt;</span><br><span class="line">    &lt;controller type=&apos;usb&apos; index=&apos;0&apos; model=&apos;qemu-xhci&apos; ports=&apos;15&apos;&gt;</span><br><span class="line">      &lt;alias name=&apos;usb&apos;/&gt;</span><br><span class="line">      &lt;address type=&apos;pci&apos; domain=&apos;0x0000&apos; bus=&apos;0x02&apos; slot=&apos;0x00&apos; function=&apos;0x0&apos;/&gt;</span><br><span class="line">    &lt;/controller&gt;</span><br><span class="line">    &lt;controller type=&apos;sata&apos; index=&apos;0&apos;&gt;</span><br><span class="line">      &lt;alias name=&apos;ide&apos;/&gt;</span><br><span class="line">      &lt;address type=&apos;pci&apos; domain=&apos;0x0000&apos; bus=&apos;0x00&apos; slot=&apos;0x1f&apos; function=&apos;0x2&apos;/&gt;</span><br><span class="line">    &lt;/controller&gt;</span><br><span class="line">    &lt;controller type=&apos;pci&apos; index=&apos;0&apos; model=&apos;pcie-root&apos;&gt;</span><br><span class="line">      &lt;alias name=&apos;pcie.0&apos;/&gt;</span><br><span class="line">    &lt;/controller&gt;</span><br><span class="line">    &lt;controller type=&apos;pci&apos; index=&apos;1&apos; model=&apos;pcie-root-port&apos;&gt;</span><br><span class="line">      &lt;model name=&apos;pcie-root-port&apos;/&gt;</span><br><span class="line">      &lt;target chassis=&apos;1&apos; port=&apos;0x10&apos;/&gt;</span><br><span class="line">      &lt;alias name=&apos;pci.1&apos;/&gt;</span><br><span class="line">      &lt;address type=&apos;pci&apos; domain=&apos;0x0000&apos; bus=&apos;0x00&apos; slot=&apos;0x03&apos; function=&apos;0x0&apos; multifunction=&apos;on&apos;/&gt;</span><br><span class="line">    &lt;/controller&gt;</span><br><span class="line">    &lt;controller type=&apos;pci&apos; index=&apos;2&apos; model=&apos;pcie-root-port&apos;&gt;</span><br><span class="line">      &lt;model name=&apos;pcie-root-port&apos;/&gt;</span><br><span class="line">      &lt;target chassis=&apos;2&apos; port=&apos;0x11&apos;/&gt;</span><br><span class="line">      &lt;alias name=&apos;pci.2&apos;/&gt;</span><br><span class="line">      &lt;address type=&apos;pci&apos; domain=&apos;0x0000&apos; bus=&apos;0x00&apos; slot=&apos;0x03&apos; function=&apos;0x1&apos;/&gt;</span><br><span class="line">    &lt;/controller&gt;</span><br><span class="line">    &lt;controller type=&apos;pci&apos; index=&apos;3&apos; model=&apos;pcie-root-port&apos;&gt;</span><br><span class="line">      &lt;model name=&apos;pcie-root-port&apos;/&gt;</span><br><span class="line">      &lt;target chassis=&apos;3&apos; port=&apos;0x12&apos;/&gt;</span><br><span class="line">      &lt;alias name=&apos;pci.3&apos;/&gt;</span><br><span class="line">      &lt;address type=&apos;pci&apos; domain=&apos;0x0000&apos; bus=&apos;0x00&apos; slot=&apos;0x03&apos; function=&apos;0x2&apos;/&gt;</span><br><span class="line">    &lt;/controller&gt;</span><br><span class="line">    &lt;controller type=&apos;pci&apos; index=&apos;4&apos; model=&apos;pcie-root-port&apos;&gt;</span><br><span class="line">      &lt;model name=&apos;pcie-root-port&apos;/&gt;</span><br><span class="line">      &lt;target chassis=&apos;4&apos; port=&apos;0x13&apos;/&gt;</span><br><span class="line">      &lt;alias name=&apos;pci.4&apos;/&gt;</span><br><span class="line">      &lt;address type=&apos;pci&apos; domain=&apos;0x0000&apos; bus=&apos;0x00&apos; slot=&apos;0x03&apos; function=&apos;0x3&apos;/&gt;</span><br><span class="line">    &lt;/controller&gt;</span><br><span class="line">    &lt;controller type=&apos;pci&apos; index=&apos;5&apos; model=&apos;pcie-root-port&apos;&gt;</span><br><span class="line">      &lt;model name=&apos;pcie-root-port&apos;/&gt;</span><br><span class="line">      &lt;target chassis=&apos;5&apos; port=&apos;0x14&apos;/&gt;</span><br><span class="line">      &lt;alias name=&apos;pci.5&apos;/&gt;</span><br><span class="line">      &lt;address type=&apos;pci&apos; domain=&apos;0x0000&apos; bus=&apos;0x00&apos; slot=&apos;0x03&apos; function=&apos;0x4&apos;/&gt;</span><br><span class="line">    &lt;/controller&gt;</span><br><span class="line">    &lt;controller type=&apos;pci&apos; index=&apos;6&apos; model=&apos;pcie-to-pci-bridge&apos;&gt;</span><br><span class="line">      &lt;model name=&apos;pcie-pci-bridge&apos;/&gt;</span><br><span class="line">      &lt;alias name=&apos;pci.6&apos;/&gt;</span><br><span class="line">      &lt;address type=&apos;pci&apos; domain=&apos;0x0000&apos; bus=&apos;0x04&apos; slot=&apos;0x00&apos; function=&apos;0x0&apos;/&gt;</span><br><span class="line">    &lt;/controller&gt;</span><br><span class="line">    &lt;controller type=&apos;scsi&apos; index=&apos;0&apos; model=&apos;virtio-scsi&apos;&gt;</span><br><span class="line">      &lt;alias name=&apos;scsi0&apos;/&gt;</span><br><span class="line">      &lt;address type=&apos;pci&apos; domain=&apos;0x0000&apos; bus=&apos;0x05&apos; slot=&apos;0x00&apos; function=&apos;0x0&apos;/&gt;</span><br><span class="line">    &lt;/controller&gt;</span><br><span class="line">    &lt;interface type=&apos;bridge&apos;&gt;</span><br><span class="line">      &lt;mac address=&apos;52:54:00:33:76:f0&apos;/&gt;</span><br><span class="line">      &lt;source bridge=&apos;bridge0&apos;/&gt;</span><br><span class="line">      &lt;target dev=&apos;vnet0&apos;/&gt;</span><br><span class="line">      &lt;model type=&apos;virtio&apos;/&gt;</span><br><span class="line">      &lt;alias name=&apos;net0&apos;/&gt;</span><br><span class="line">      &lt;address type=&apos;pci&apos; domain=&apos;0x0000&apos; bus=&apos;0x01&apos; slot=&apos;0x00&apos; function=&apos;0x0&apos;/&gt;</span><br><span class="line">    &lt;/interface&gt;</span><br><span class="line">    &lt;serial type=&apos;pty&apos;&gt;</span><br><span class="line">      &lt;source path=&apos;/dev/pts/2&apos;/&gt;</span><br><span class="line">      &lt;target type=&apos;isa-serial&apos; port=&apos;0&apos;&gt;</span><br><span class="line">        &lt;model name=&apos;isa-serial&apos;/&gt;</span><br><span class="line">      &lt;/target&gt;</span><br><span class="line">      &lt;alias name=&apos;serial0&apos;/&gt;</span><br><span class="line">    &lt;/serial&gt;</span><br><span class="line">    &lt;console type=&apos;pty&apos; tty=&apos;/dev/pts/2&apos;&gt;</span><br><span class="line">      &lt;source path=&apos;/dev/pts/2&apos;/&gt;</span><br><span class="line">      &lt;target type=&apos;serial&apos; port=&apos;0&apos;/&gt;</span><br><span class="line">      &lt;alias name=&apos;serial0&apos;/&gt;</span><br><span class="line">    &lt;/console&gt;</span><br><span class="line">    &lt;input type=&apos;tablet&apos; bus=&apos;usb&apos;&gt;</span><br><span class="line">      &lt;alias name=&apos;input0&apos;/&gt;</span><br><span class="line">      &lt;address type=&apos;usb&apos; bus=&apos;0&apos; port=&apos;1&apos;/&gt;</span><br><span class="line">    &lt;/input&gt;</span><br><span class="line">    &lt;input type=&apos;mouse&apos; bus=&apos;ps2&apos;&gt;</span><br><span class="line">      &lt;alias name=&apos;input1&apos;/&gt;</span><br><span class="line">    &lt;/input&gt;</span><br><span class="line">    &lt;input type=&apos;keyboard&apos; bus=&apos;ps2&apos;&gt;</span><br><span class="line">      &lt;alias name=&apos;input2&apos;/&gt;</span><br><span class="line">    &lt;/input&gt;</span><br><span class="line">    &lt;graphics type=&apos;spice&apos;&gt;</span><br><span class="line">      &lt;listen type=&apos;none&apos;/&gt;</span><br><span class="line">      &lt;image compression=&apos;off&apos;/&gt;</span><br><span class="line">      &lt;gl enable=&apos;yes&apos; rendernode=&apos;/dev/dri/by-path/pci-0000:00:02.0-render&apos;/&gt;</span><br><span class="line">    &lt;/graphics&gt;</span><br><span class="line">    &lt;sound model=&apos;ich9&apos;&gt;</span><br><span class="line">      &lt;alias name=&apos;sound0&apos;/&gt;</span><br><span class="line">      &lt;address type=&apos;pci&apos; domain=&apos;0x0000&apos; bus=&apos;0x00&apos; slot=&apos;0x1b&apos; function=&apos;0x0&apos;/&gt;</span><br><span class="line">    &lt;/sound&gt;</span><br><span class="line">    &lt;video&gt;</span><br><span class="line">      &lt;model type=&apos;cirrus&apos; vram=&apos;16384&apos; heads=&apos;1&apos; primary=&apos;yes&apos;/&gt;</span><br><span class="line">      &lt;alias name=&apos;video0&apos;/&gt;</span><br><span class="line">      &lt;address type=&apos;pci&apos; domain=&apos;0x0000&apos; bus=&apos;0x00&apos; slot=&apos;0x01&apos; function=&apos;0x0&apos;/&gt;</span><br><span class="line">    &lt;/video&gt;</span><br><span class="line">    &lt;hostdev mode=&apos;subsystem&apos; type=&apos;mdev&apos; managed=&apos;yes&apos; model=&apos;vfio-pci&apos; display=&apos;on&apos;&gt;</span><br><span class="line">      &lt;source&gt;</span><br><span class="line">        &lt;address uuid=&apos;ab8c3af8-8366-449d-8489-fe9254e44621&apos;/&gt;</span><br><span class="line">      &lt;/source&gt;</span><br><span class="line">      &lt;alias name=&apos;hostdev0&apos;/&gt;</span><br><span class="line">      &lt;rom bar=&apos;on&apos;/&gt;</span><br><span class="line">      &lt;address type=&apos;pci&apos; domain=&apos;0x0000&apos; bus=&apos;0x00&apos; slot=&apos;0x02&apos; function=&apos;0x0&apos;/&gt;</span><br><span class="line">    &lt;/hostdev&gt;</span><br><span class="line">    &lt;redirdev bus=&apos;usb&apos; type=&apos;spicevmc&apos;&gt;</span><br><span class="line">      &lt;alias name=&apos;redir0&apos;/&gt;</span><br><span class="line">      &lt;address type=&apos;usb&apos; bus=&apos;0&apos; port=&apos;2&apos;/&gt;</span><br><span class="line">    &lt;/redirdev&gt;</span><br><span class="line">    &lt;redirdev bus=&apos;usb&apos; type=&apos;spicevmc&apos;&gt;</span><br><span class="line">      &lt;alias name=&apos;redir1&apos;/&gt;</span><br><span class="line">      &lt;address type=&apos;usb&apos; bus=&apos;0&apos; port=&apos;3&apos;/&gt;</span><br><span class="line">    &lt;/redirdev&gt;</span><br><span class="line">    &lt;memballoon model=&apos;virtio&apos;&gt;</span><br><span class="line">      &lt;alias name=&apos;balloon0&apos;/&gt;</span><br><span class="line">      &lt;address type=&apos;pci&apos; domain=&apos;0x0000&apos; bus=&apos;0x03&apos; slot=&apos;0x00&apos; function=&apos;0x0&apos;/&gt;</span><br><span class="line">    &lt;/memballoon&gt;</span><br><span class="line">  &lt;/devices&gt;</span><br><span class="line">  &lt;qemu:commandline&gt;</span><br><span class="line">    &lt;qemu:arg value=&apos;-set&apos;/&gt;</span><br><span class="line">    &lt;qemu:arg value=&apos;device.video0.driver=ne2k_pci&apos;/&gt;</span><br><span class="line">    &lt;qemu:arg value=&apos;-set&apos;/&gt;</span><br><span class="line">    &lt;qemu:arg value=&apos;device.hostdev0.x-igd-opregion=on&apos;/&gt;</span><br><span class="line">  &lt;/qemu:commandline&gt;</span><br><span class="line">&lt;/domain&gt;</span><br></pre></td></tr></table></figure></p>
+
+        </div>
+        
+        <div class="level is-size-7 is-uppercase">
+            <div class="level-start">
+                <div class="level-item">
+                    <span class="is-size-6 has-text-grey has-mr-7">#</span>
+                    <a class="has-link-grey -link" href="/tags/GVT-g/">GVT-g</a>, <a class="has-link-grey -link" href="/tags/KVM/">KVM</a>, <a class="has-link-grey -link" href="/tags/Linux/">Linux</a>, <a class="has-link-grey -link" href="/tags/gpu/">gpu</a>, <a class="has-link-grey -link" href="/tags/openSUSE/">openSUSE</a>, <a class="has-link-grey -link" href="/tags/仮想化/">仮想化</a>
+                </div>
+            </div>
+        </div>
+        
+        
+        
+    </div>
+</div>
+
+
+
+
+
+<div class="card card-transparent">
+    <div class="level post-navigation is-flex-wrap is-mobile">
+        
+        <div class="level-start">
+            <a class="level level-item has-link-grey  article-nav-prev" href="/2999/12/31/firstpost/">
+                <i class="level-item fas fa-chevron-left"></i>
+                <span class="level-item">blog建てた</span>
+            </a>
+        </div>
+        
+        
+        <div class="level-end">
+            <a class="level level-item has-link-grey  article-nav-next" href="/2019/01/24/virgl-android-x86/">
+                <span class="level-item">virtio-gpu環境でopenGL-ES入りandroid-x86を動かす</span>
+                <i class="level-item fas fa-chevron-right"></i>
+            </a>
+        </div>
+        
+    </div>
+</div>
+
+
+</div>
+                
+
+
+
+
+<div class="column is-4-tablet is-4-desktop is-3-widescreen  has-order-1 column-left ">
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <nav class="level">
+            <div class="level-item has-text-centered">
+                <div>
+                    <img class="image is-128x128 has-mb-6" src="/uploads/logo.jpg" alt="zgock999">
+                    
+                    <p class="is-size-4 is-block">
+                        zgock999
+                    </p>
+                    
+                    
+                    <p class="is-size-6 is-block">
+                        仮想化とGPUとopenSUSEのおたく
+                    </p>
+                    
+                    
+                    <p class="is-size-6 is-flex is-flex-center has-text-grey">
+                        <i class="fas fa-map-marker-alt has-mr-7"></i>
+                        <span>Aichi Japan</span>
+                    </p>
+                    
+                </div>
+            </div>
+        </nav>
+        <nav class="level is-mobile">
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        投稿
+                    </p>
+                    <p class="title has-text-weight-normal">
+                        5
+                    </p>
+                </div>
+            </div>
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        カテゴリ
+                    </p>
+                    <p class="title has-text-weight-normal">
+                        2
+                    </p>
+                </div>
+            </div>
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        タグ
+                    </p>
+                    <p class="title has-text-weight-normal">
+                        9
+                    </p>
+                </div>
+            </div>
+        </nav>
+        <div class="level">
+            <a class="level-item button is-link is-rounded" href="https://mstdn.maud.io/@zgock999">
+                フォローする</a>
+        </div>
+        
+        
+        <div class="level is-mobile">
+            
+            <a class="level-item button is-white is-marginless" target="_blank" title="Github" href="https://github.com/zgock999">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+            
+            <a class="level-item button is-white is-marginless" target="_blank" title="Mastodon" href="https://mstdn.maud.io/@zgock999">
+                
+                <i class="fab fa-mastodon"></i>
+                
+            </a>
+            
+            <a class="level-item button is-white is-marginless" target="_blank" title="Bitbucket" href="https://bitbucket.org/zgock/">
+                
+                <i class="fab fa-bitbucket"></i>
+                
+            </a>
+            
+            <a class="level-item button is-white is-marginless" target="_blank" title="RSS" href="/atom.xml">
+                
+                <i class="fas fa-rss"></i>
+                
+            </a>
+            
+        </div>
+        
+    </div>
+</div>
+    
+        
+    
+        
+
+
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+            <h3 class="menu-label">
+                カテゴリ
+            </h3>
+            <ul class="menu-list">
+            <li>
+        <a class="level is-marginless" href="/categories/Linux/">
+            <span class="level-start">
+                <span class="level-item">Linux</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">4</span>
+            </span>
+        </a><ul><li>
+        <a class="level is-marginless" href="/categories/Linux/openSUSE/">
+            <span class="level-start">
+                <span class="level-item">openSUSE</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">4</span>
+            </span>
+        </a></li></ul></li>
+            </ul>
+        </div>
+    </div>
+</div>
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <h3 class="menu-label">
+            タグクラウド
+        </h3>
+        <a href="/tags/GVT-g/" style="font-size: 13.33px;">GVT-g</a> <a href="/tags/KVM/" style="font-size: 16.67px;">KVM</a> <a href="/tags/Linux/" style="font-size: 20px;">Linux</a> <a href="/tags/VirGL/" style="font-size: 10px;">VirGL</a> <a href="/tags/ffmpeg/" style="font-size: 10px;">ffmpeg</a> <a href="/tags/gpu/" style="font-size: 20px;">gpu</a> <a href="/tags/misc/" style="font-size: 10px;">misc</a> <a href="/tags/openSUSE/" style="font-size: 20px;">openSUSE</a> <a href="/tags/仮想化/" style="font-size: 16.67px;">仮想化</a>
+    </div>
+</div>
+
+    
+    
+        <div class="column-right-shadow is-hidden-widescreen ">
+        
+            
+<div class="card widget">
+    <div class="card-content">
+        <h3 class="menu-label">
+            最近の記事
+        </h3>
+        
+        <article class="media">
+            
+            <a href="/2999/12/31/firstpost/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/images/thumbnail.svg" alt="blog建てた">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2999-12-31T03:59:59.000Z">2999-12-31</time></div>
+                    <a href="/2999/12/31/firstpost/" class="has-link-black-ter is-size-6">blog建てた</a>
+                    <p class="is-size-7 is-uppercase">
+                        
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/01/26/gvtg2/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/uploads/opensuse.png" alt="openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その２">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-01-25T19:14:23.000Z">2019-01-26</time></div>
+                    <a href="/2019/01/26/gvtg2/" class="has-link-black-ter is-size-6">openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その２</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Linux/">Linux</a> / <a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/01/24/virgl-android-x86/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/uploads/opensuse.png" alt="virtio-gpu環境でopenGL-ES入りandroid-x86を動かす">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-01-23T22:09:07.000Z">2019-01-24</time></div>
+                    <a href="/2019/01/24/virgl-android-x86/" class="has-link-black-ter is-size-6">virtio-gpu環境でopenGL-ES入りandroid-x86を動かす</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Linux/">Linux</a> / <a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/01/23/gvtg/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/uploads/opensuse.png" alt="openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その１">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-01-22T22:05:00.000Z">2019-01-23</time></div>
+                    <a href="/2019/01/23/gvtg/" class="has-link-black-ter is-size-6">openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その１</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Linux/">Linux</a> / <a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/01/22/ffmpeg-nvenc/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/uploads/opensuse.png" alt="openSUSE Leap 15でNVENCを有効にしたffmpegをビルドし、mpeg2-tsのGPUエンコードを行う">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-01-22T04:13:18.000Z">2019-01-22</time></div>
+                    <a href="/2019/01/22/ffmpeg-nvenc/" class="has-link-black-ter is-size-6">openSUSE Leap 15でNVENCを有効にしたffmpegをビルドし、mpeg2-tsのGPUエンコードを行う</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Linux/">Linux</a> / <a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+    </div>
+</div>
+
+        
+            <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+        <h3 class="menu-label">
+            アーカイブ
+        </h3>
+        <ul class="menu-list">
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2999/12/">
+                <span class="level-start">
+                    <span class="level-item">2999年十二月</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/01/">
+                <span class="level-start">
+                    <span class="level-item">2019年一月</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">4</span>
+                </span>
+            </a>
+        </li>
+        
+        </ul>
+        </div>
+    </div>
+</div>
+
+        
+            <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+            <h3 class="menu-label">
+                タグ
+            </h3>
+            <div class="field is-grouped is-grouped-multiline">
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/GVT-g/">
+                        <span class="tag">GVT-g</span>
+                        <span class="tag is-grey">2</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/KVM/">
+                        <span class="tag">KVM</span>
+                        <span class="tag is-grey">3</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/Linux/">
+                        <span class="tag">Linux</span>
+                        <span class="tag is-grey">4</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/VirGL/">
+                        <span class="tag">VirGL</span>
+                        <span class="tag is-grey">1</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/ffmpeg/">
+                        <span class="tag">ffmpeg</span>
+                        <span class="tag is-grey">1</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/gpu/">
+                        <span class="tag">gpu</span>
+                        <span class="tag is-grey">4</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/misc/">
+                        <span class="tag">misc</span>
+                        <span class="tag is-grey">1</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/openSUSE/">
+                        <span class="tag">openSUSE</span>
+                        <span class="tag is-grey">4</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/仮想化/">
+                        <span class="tag">仮想化</span>
+                        <span class="tag is-grey">3</span>
+                    </a>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+        
+        </div>
+    
+</div>
+
+                
+
+
+
+
+<div class="column is-4-tablet is-4-desktop is-3-widescreen is-hidden-touch is-hidden-desktop-only has-order-3 column-right ">
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <h3 class="menu-label">
+            最近の記事
+        </h3>
+        
+        <article class="media">
+            
+            <a href="/2999/12/31/firstpost/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/images/thumbnail.svg" alt="blog建てた">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2999-12-31T03:59:59.000Z">2999-12-31</time></div>
+                    <a href="/2999/12/31/firstpost/" class="has-link-black-ter is-size-6">blog建てた</a>
+                    <p class="is-size-7 is-uppercase">
+                        
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/01/26/gvtg2/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/uploads/opensuse.png" alt="openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その２">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-01-25T19:14:23.000Z">2019-01-26</time></div>
+                    <a href="/2019/01/26/gvtg2/" class="has-link-black-ter is-size-6">openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その２</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Linux/">Linux</a> / <a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/01/24/virgl-android-x86/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/uploads/opensuse.png" alt="virtio-gpu環境でopenGL-ES入りandroid-x86を動かす">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-01-23T22:09:07.000Z">2019-01-24</time></div>
+                    <a href="/2019/01/24/virgl-android-x86/" class="has-link-black-ter is-size-6">virtio-gpu環境でopenGL-ES入りandroid-x86を動かす</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Linux/">Linux</a> / <a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/01/23/gvtg/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/uploads/opensuse.png" alt="openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その１">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-01-22T22:05:00.000Z">2019-01-23</time></div>
+                    <a href="/2019/01/23/gvtg/" class="has-link-black-ter is-size-6">openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その１</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Linux/">Linux</a> / <a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/01/22/ffmpeg-nvenc/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/uploads/opensuse.png" alt="openSUSE Leap 15でNVENCを有効にしたffmpegをビルドし、mpeg2-tsのGPUエンコードを行う">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-01-22T04:13:18.000Z">2019-01-22</time></div>
+                    <a href="/2019/01/22/ffmpeg-nvenc/" class="has-link-black-ter is-size-6">openSUSE Leap 15でNVENCを有効にしたffmpegをビルドし、mpeg2-tsのGPUエンコードを行う</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Linux/">Linux</a> / <a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+    </div>
+</div>
+
+    
+        <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+        <h3 class="menu-label">
+            アーカイブ
+        </h3>
+        <ul class="menu-list">
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2999/12/">
+                <span class="level-start">
+                    <span class="level-item">2999年十二月</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/01/">
+                <span class="level-start">
+                    <span class="level-item">2019年一月</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">4</span>
+                </span>
+            </a>
+        </li>
+        
+        </ul>
+        </div>
+    </div>
+</div>
+
+    
+        <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+            <h3 class="menu-label">
+                タグ
+            </h3>
+            <div class="field is-grouped is-grouped-multiline">
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/GVT-g/">
+                        <span class="tag">GVT-g</span>
+                        <span class="tag is-grey">2</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/KVM/">
+                        <span class="tag">KVM</span>
+                        <span class="tag is-grey">3</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/Linux/">
+                        <span class="tag">Linux</span>
+                        <span class="tag is-grey">4</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/VirGL/">
+                        <span class="tag">VirGL</span>
+                        <span class="tag is-grey">1</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/ffmpeg/">
+                        <span class="tag">ffmpeg</span>
+                        <span class="tag is-grey">1</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/gpu/">
+                        <span class="tag">gpu</span>
+                        <span class="tag is-grey">4</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/misc/">
+                        <span class="tag">misc</span>
+                        <span class="tag is-grey">1</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/openSUSE/">
+                        <span class="tag">openSUSE</span>
+                        <span class="tag is-grey">4</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/仮想化/">
+                        <span class="tag">仮想化</span>
+                        <span class="tag is-grey">3</span>
+                    </a>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+    
+    
+</div>
+
+            </div>
+        </div>
+    </section>
+    <footer class="footer">
+    <div class="container">
+        <div class="level">
+            <div class="level-start has-text-centered-mobile">
+                <a class="footer-logo is-block has-mb-6" href="/">
+                
+                    <img src="/uploads/banner.jpg" alt="openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その２" height="28">
+                
+                </a>
+                <p class="is-size-7">
+                &copy; 2019 zgock999&nbsp;
+                Powered by <a href="http://hexo.io/" target="_blank">Hexo</a> & <a href="http://github.com/ppoffice/hexo-theme-icarus">Icarus</a>
+                </p>
+            </div>
+            <div class="level-end">
+            
+                <div class="field has-addons is-flex-center-mobile has-mt-5-mobile is-flex-wrap is-flex-middle">
+                
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" title="Creative Commons" href="https://creativecommons.org/">
+                        
+                        <i class="fab fa-creative-commons"></i>
+                        
+                    </a>
+                </p>
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/">
+                        
+                        <i class="fab fa-creative-commons-by"></i>
+                        
+                    </a>
+                </p>
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" title="Download on GitHub" href="http://github.com/ppoffice/hexo-theme-icarus">
+                        
+                        <i class="fab fa-github"></i>
+                        
+                    </a>
+                </p>
+                
+                </div>
+            
+            </div>
+        </div>
+    </div>
+</footer>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script>
+<script>moment.locale("ja");</script>
+
+
+    
+    
+    
+    <script src="/js/animation.js"></script>
+    
+
+    
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/js/lightgallery.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/js/jquery.justifiedGallery.min.js" defer></script>
+    <script src="/js/gallery.js" defer></script>
+    
+
+    
+    
+
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update
+            my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.js" defer></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        });
+    });
+</script>
+
+
+    
+    
+<script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    MathJax.Hub.Config({
+        'HTML-CSS': {matchFontHeight: false},
+        SVG: {matchFontHeight: false},
+        CommonHTML: {matchFontHeight: false}
+    });
+});
+</script>
+
+    
+    
+
+<a id="back-to-top" title="Back to Top" href="javascript:;">
+    <i class="fas fa-chevron-up"></i>
+</a>
+<script src="/js/back-to-top.js" defer></script>
+
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script>
+    <script src="/js/clipboard.js" defer></script>
+    
+
+    
+
+
+<script src="/js/main.js" defer></script>
+
+    
+    <div class="searchbox ins-search">
+    <div class="searchbox-container ins-search-container">
+        <div class="searchbox-input-wrapper">
+            <input type="text" class="searchbox-input ins-search-input" placeholder="Type something...">
+            <span class="searchbox-close ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="searchbox-result-wrapper ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: '投稿',
+                PAGES: 'Pages',
+                CATEGORIES: 'カテゴリ',
+                TAGS: 'タグ',
+                UNTITLED: '(Untitled)',
+            },
+            CONTENT_URL: '/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
+<script src="/js/insight.js" defer></script>
+<link rel="stylesheet" href="/css/search.css">
+<link rel="stylesheet" href="/css/insight.css">
+    
+</body>
+</html>
