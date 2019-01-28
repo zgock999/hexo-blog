@@ -16,7 +16,7 @@
 <meta property="og:description" content="KVMやXenといったLinuxハイバーバイザ上のVMでGPUを使用する場合、GPUパススルーを用いてVM一つにGPUをまるごと渡してしまうのが個人ユースでは一般的です GPUパススルーを用いた場合、VM一つがGPUを専有してしまうため、使用できるVMの数に制約があったり、そもそもノートPCのように物理的にGPUが増設できない環境が存在したりと制約が多いのが難点でした これまでも一部のエンタープラ">
 <meta property="og:locale" content="ja">
 <meta property="og:image" content="https://blog.zgock-lab.net/uploads/gvtg-shot1.png">
-<meta property="og:updated_time" content="2019-01-23T20:36:07.380Z">
+<meta property="og:updated_time" content="2019-01-26T04:41:13.166Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その１">
 <meta name="twitter:description" content="KVMやXenといったLinuxハイバーバイザ上のVMでGPUを使用する場合、GPUパススルーを用いてVM一つにGPUをまるごと渡してしまうのが個人ユースでは一般的です GPUパススルーを用いた場合、VM一つがGPUを専有してしまうため、使用できるVMの数に制約があったり、そもそもノートPCのように物理的にGPUが増設できない環境が存在したりと制約が多いのが難点でした これまでも一部のエンタープラ">
@@ -172,7 +172,7 @@
                 <span class="level-item has-text-grey">
                     
                     
-                    10分 read (About 1509 words)
+                    10分 read (About 1510 words)
                 </span>
                 
             </div>
@@ -256,7 +256,7 @@
 <li>UUIDその２でi915-GVTg_V5_8を確保するgvtgpu3.service</li>
 </ul>
 <p>の3つを作り、１枚確保の時はgvtgpuを、２枚確保の時はgvtgpu2と3をenableにする。という運用を行っています</p>
-<p>とりあえずここまでとし、実際のVMに適用してみる部分はその２にてで</p>
+<p>とりあえずここまでとし、実際のVMに適用してみる部分は<a href="/gvtg2">その２</a>にてで</p>
 <p>(続く)</p>
 
         </div>

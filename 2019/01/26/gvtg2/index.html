@@ -41,7 +41,7 @@
 <meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot24.png">
 <meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot25.png">
 <meta property="og:image" content="https://blog.zgock-lab.net/2019/01/26/gvtg2/shot26.png">
-<meta property="og:updated_time" content="2019-01-26T04:09:24.821Z">
+<meta property="og:updated_time" content="2019-01-26T09:17:53.919Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その２">
 <meta name="twitter:description" content="その１で共有GPUの確保と開放までができるようになりましたので、実際のゲストに適用してみます ついでに？virt-managerでwindowsゲストをインストールする際のおすすめ設定の話とかも">
@@ -197,7 +197,7 @@
                 <span class="level-item has-text-grey">
                     
                     
-                    20分 read (About 3043 words)
+                    20分 read (About 3027 words)
                 </span>
                 
             </div>
@@ -297,7 +297,7 @@
 <p>を<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;domain type=&apos;kvm&apos; xmlns:qemu=&apos;http://libvirt.org/schemas/domain/qemu/1.0&apos;&gt;</span><br></pre></td></tr></table></figure></p>
 <p>これでXML中にqemuのコマンドラインを直に設定できるようになります</p>
 <h3><span id="標準vgaの無効化">標準VGAの無効化</span></h3><p>まずvideoタグを検索し、<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;video&gt;</span><br><span class="line">  &lt;model type=&apos;qxl&apos; ram=&apos;65536&apos; vram=&apos;65536&apos; vgamem=&apos;16384&apos; heads=&apos;1&apos; primary=&apos;yes&apos;/&gt;</span><br><span class="line">  &lt;address type=&apos;pci&apos; domain=&apos;0x0000&apos; bus=&apos;0x00&apos; slot=&apos;0x02&apos; function=&apos;0x0&apos;/&gt;</span><br><span class="line">&lt;/video&gt;</span><br></pre></td></tr></table></figure></p>
-<p>この部分をQXLからcirrusに変更します<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;video&gt;</span><br><span class="line">  &lt;model type=&apos;cirrus&apos; vram=&apos;16384&apos; heads=&apos;1&apos; primary=&apos;yes&apos;/&gt;</span><br><span class="line">  &lt;address type=&apos;pci&apos; domain=&apos;0x0000&apos; bus=&apos;0x00&apos; slot=&apos;0x01&apos; function=&apos;0x0&apos;/&gt;</span><br><span class="line">&lt;/video&gt;</span><br></pre></td></tr></table></figure></p>
+<p>この部分をQXLからcirrusに変更します<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;video&gt;</span><br><span class="line">  &lt;model type=&apos;cirrus&apos; vram=&apos;16384&apos; heads=&apos;1&apos; primary=&apos;yes&apos;/&gt;</span><br><span class="line">  &lt;address type=&apos;pci&apos; domain=&apos;0x0000&apos; bus=&apos;0x00&apos; slot=&apos;0x02&apos; function=&apos;0x0&apos;/&gt;</span><br><span class="line">&lt;/video&gt;</span><br></pre></td></tr></table></figure></p>
 <p>その後XMLの末尾、/deviceタグと/domainタグの間に以下の記述を追加します<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;qemu:commandline&gt;</span><br><span class="line">  &lt;qemu:arg value=&apos;-set&apos;/&gt;</span><br><span class="line">  &lt;qemu:arg value=&apos;device.video0.driver=ne2k_pci&apos;/&gt;</span><br><span class="line">&lt;/qemu:commandline&gt;</span><br></pre></td></tr></table></figure></p>
 <p>これはlibvirtの仕様で、graphicデバイスが設定されていると、必ず一つのビデオデバイスが追加されてしまうため、そのビデオデバイスに間違ったドライバを当てることであえてエラーを起こしてそのデバイスを無効化するというバッドノウハウです。</p>
 <p>いずれlibvirtでmodel type=’none’が選択できるようになるかもしれません</p>
@@ -307,11 +307,11 @@
 <p>続いて、hostdevタグの中の<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;hostdev mode=&apos;subsystem&apos; type=&apos;mdev&apos; managed=&apos;yes&apos; model=&apos;vfio-pci&apos; display=&apos;off&apos;&gt;</span><br></pre></td></tr></table></figure></p>
 <p>のdisplayをonに変更します<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;hostdev mode=&apos;subsystem&apos; type=&apos;mdev&apos; managed=&apos;yes&apos; model=&apos;vfio-pci&apos; display=&apos;on&apos;&gt;</span><br></pre></td></tr></table></figure></p>
 <p>設定を保存しゲストを起動すればGVTデバイスをビデオデバイスとしたゲストが起動します</p>
-<h2><span id="起動後の設定">起動後の設定</span></h2><p>virt-managerからゲストを起動すると、しばらくの間はdevice no readyということで表示されません。</p>
+<h2><span id="起動後の設定">起動後の設定</span></h2><p>virt-managerからゲストを起動すると、しばらくの間はdevice not readyということで表示されません。</p>
 <p>GVTデバイスはBIOS ROMを持たないため、seabiosがフレームバッファを認識できないためです</p>
 <p><img src="shot21.png" alt="shot21"></p>
 <p>しばらく待って、windowsのIntelドライバがGPUを掴めば表示されます</p>
-<p><a href="/gvtg">その１</a>で確保したGVT_4デバイスはデフォルト解像度が1920x1200なので1920x1200以下のディスプレイで表示した場合、ドット潰れが発生してしまうため、フルスクリーン表示したとしてもドット潰れが発生するため解像度を少し下げます</p>
+<p><a href="/gvtg">その１</a>で確保したGVT_4デバイスはデフォルト解像度が1920x1200なので1920x1200以下のディスプレイで表示した場合、フルスクリーン表示したとしてもドット潰れが発生するため解像度を少し下げます</p>
 <p>GVTデバイス自体が非力ですし、1900x1080のディスプレイであれば1366x768あたりが実用的な解像度でしょう</p>
 <h3><span id="テスト">テスト</span></h3><p><a href="https://wiki.akane.blue/maid" target="_blank" rel="noopener">末代の住民</a>としてはとりあえずまずこれをということでカスタムオーダーメイド３Dの体験版を起動してみました</p>
 <p><img src="shot22.png" alt="shot22"></p>
