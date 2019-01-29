@@ -2,18 +2,33 @@
 <html lang="ja">
 <head><meta name="generator" content="Hexo 3.8.0">
     <meta charset="utf-8">
-<title>それすらもコアの果て</title>
+<title>webArenaの３６０円VPSにopenSUSE Leap 15をリモートインストールする - それすらもコアの果て</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
 
 
-    <meta property="og:type" content="website">
-<meta property="og:title" content="それすらもコアの果て">
-<meta property="og:url" content="https://blog.zgock-lab.net/index.html">
+    <meta name="description" content="これまで、イタリアのaruba.itというところで月1EURのVPSを借りてopenSUSE Leap15を動かしていたのですが、そちらが年明けから月3EURに値上がりをしまして、月1EURじゃなければわざわざ遠いEUのサーバーを借りている理由もないということで引っ越しをしました で、月1〜2ドルもしくは1〜2EURのサーバーを探しましたが、どうにも条件にマッチしたところがなく、だったら回線の速い">
+<meta name="keywords" content="openSUSE,Linux,VPS,webArena">
+<meta property="og:type" content="article">
+<meta property="og:title" content="webArenaの３６０円VPSにopenSUSE Leap 15をリモートインストールする">
+<meta property="og:url" content="https://blog.zgock-lab.net/2019/01/28/webarena/index.html">
 <meta property="og:site_name" content="それすらもコアの果て">
+<meta property="og:description" content="これまで、イタリアのaruba.itというところで月1EURのVPSを借りてopenSUSE Leap15を動かしていたのですが、そちらが年明けから月3EURに値上がりをしまして、月1EURじゃなければわざわざ遠いEUのサーバーを借りている理由もないということで引っ越しをしました で、月1〜2ドルもしくは1〜2EURのサーバーを探しましたが、どうにも条件にマッチしたところがなく、だったら回線の速い">
 <meta property="og:locale" content="ja">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/28/webarena/shot1.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/28/webarena/shot2.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/28/webarena/shot3.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/28/webarena/shot4.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/28/webarena/shot5.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/28/webarena/shot6.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/28/webarena/shot7.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/28/webarena/shot8.png">
+<meta property="og:image" content="https://blog.zgock-lab.net/2019/01/28/webarena/shot9.png">
+<meta property="og:updated_time" content="2019-01-29T00:52:29.847Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="それすらもコアの果て">
+<meta name="twitter:title" content="webArenaの３６０円VPSにopenSUSE Leap 15をリモートインストールする">
+<meta name="twitter:description" content="これまで、イタリアのaruba.itというところで月1EURのVPSを借りてopenSUSE Leap15を動かしていたのですが、そちらが年明けから月3EURに値上がりをしまして、月1EURじゃなければわざわざ遠いEUのサーバーを借りている理由もないということで引っ越しをしました で、月1〜2ドルもしくは1〜2EURのサーバーを探しましたが、どうにも条件にマッチしたところがなく、だったら回線の速い">
+<meta name="twitter:image" content="https://blog.zgock-lab.net/2019/01/28/webarena/shot1.png">
 
 
 
@@ -92,7 +107,7 @@
         <div class="navbar-brand is-flex-center">
             <a class="navbar-item navbar-logo" href="/">
             
-                <img src="/uploads/banner.jpg" alt="それすらもコアの果て" height="28">
+                <img src="/uploads/banner.jpg" alt="webArenaの３６０円VPSにopenSUSE Leap 15をリモートインストールする" height="28">
             
             </a>
         </div>
@@ -100,7 +115,7 @@
             
             <div class="navbar-start">
                 
-                <a class="navbar-item is-active" href="/">Home</a>
+                <a class="navbar-item" href="/">Home</a>
                 
                 <a class="navbar-item" href="/archives">Archives</a>
                 
@@ -143,55 +158,12 @@
     <section class="section">
         <div class="container">
             <div class="columns">
-                <div class="column is-8-tablet is-8-desktop is-6-widescreen has-order-2 column-main">
-    <div class="card">
-    
-    <div class="card-content article ">
-        
-        <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
-            <div class="level-left">
-                <time class="level-item has-text-grey" datetime="2999-12-31T03:59:59.000Z">2999-12-31</time>
-                
-                
-                <span class="level-item has-text-grey">
-                    
-                    
-                    数秒 read (About 109 words)
-                </span>
-                
-            </div>
-        </div>
-        
-        <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
-            
-                <a class="has-link-black-ter" href="/2999/12/31/firstpost/">blog建てた</a>
-            
-        </h1>
-        <div class="content">
-            <p>これまで諸々の実験やら作業の記録はgistに書き残していたのだけど、blog式の方が良いかなということで、github pagesに建てました</p>
-<p>gistの方の記事もこちらに追い追い転載していくと思います</p>
-<p>多分openSUSE関連のことをつらつら書いていくんじゃないでしょうか</p>
-
-        </div>
-        
-        
-        
-    </div>
-</div>
-
-
-
-
-
-
-
-
-    <div class="card">
+                <div class="column is-8-tablet is-8-desktop is-6-widescreen has-order-2 column-main"><div class="card">
     
     <div class="card-image">
-        <a href="/2019/01/28/webarena/" class="image is-7by1">
+        <span class="image is-7by1">
             <img class="thumbnail" src="/uploads/opensuse.png" alt="webArenaの３６０円VPSにopenSUSE Leap 15をリモートインストールする">
-        </a>
+        </span>
     </div>
     
     <div class="card-content article ">
@@ -216,261 +188,109 @@
         
         <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
             
-                <a class="has-link-black-ter" href="/2019/01/28/webarena/">webArenaの３６０円VPSにopenSUSE Leap 15をリモートインストールする</a>
+                webArenaの３６０円VPSにopenSUSE Leap 15をリモートインストールする
             
         </h1>
         <div class="content">
             <p>これまで、イタリアのaruba.itというところで月1EURのVPSを借りてopenSUSE Leap15を動かしていたのですが、そちらが年明けから月3EURに値上がりをしまして、月1EURじゃなければわざわざ遠いEUのサーバーを借りている理由もないということで引っ越しをしました</p>
 <p>で、月1〜2ドルもしくは1〜2EURのサーバーを探しましたが、どうにも条件にマッチしたところがなく、だったら回線の速い国内VPSにすっかとなりまして、そういえば<a href="https://web.arena.ne.jp/vps-cloud" target="_blank" rel="noopener">webArena</a>が値下げして360円プランでもメモリ1Gのディスク20GBになってたなということで借りることにしました</p>
 <p>が、こちらはOSテンプレートがCentOS6、7とUbuntu18.04しかないため、Ubuntu18.04を踏み台としてopenSUSE Leap 15をリモートインストールすることにしました</p>
-        </div>
-        
-        
-        <div class="level is-mobile">
-            <div class="level-start">
-                <div class="level-item">
-                <a class="button is-size-7 is-light" href="/2019/01/28/webarena/#more">Read More</a>
-                </div>
-            </div>
-        </div>
-        
-        
-    </div>
-</div>
-
-
-
-
-
-
-
-
-    <div class="card">
-    
-    <div class="card-image">
-        <a href="/2019/01/26/gvtg2/" class="image is-7by1">
-            <img class="thumbnail" src="/uploads/opensuse.png" alt="openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その２">
-        </a>
-    </div>
-    
-    <div class="card-content article ">
-        
-        <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
-            <div class="level-left">
-                <time class="level-item has-text-grey" datetime="2019-01-25T19:14:23.000Z">2019-01-26</time>
-                
-                <div class="level-item">
-                <a class="has-link-grey -link" href="/categories/Linux/">Linux</a>&nbsp;/&nbsp;<a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
-                </div>
-                
-                
-                <span class="level-item has-text-grey">
-                    
-                    
-                    20分 read (About 3027 words)
-                </span>
-                
-            </div>
-        </div>
-        
-        <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
-            
-                <a class="has-link-black-ter" href="/2019/01/26/gvtg2/">openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その２</a>
-            
-        </h1>
-        <div class="content">
-            <p><a href="/gvtg">その１</a>で共有GPUの確保と開放までができるようになりましたので、実際のゲストに適用してみます</p>
-<p>ついでに？virt-managerでwindowsゲストをインストールする際のおすすめ設定の話とかも</p>
-        </div>
-        
-        
-        <div class="level is-mobile">
-            <div class="level-start">
-                <div class="level-item">
-                <a class="button is-size-7 is-light" href="/2019/01/26/gvtg2/#more">Read More</a>
-                </div>
-            </div>
-        </div>
-        
-        
-    </div>
-</div>
-
-
-
-
-
-
-
-
-    <div class="card">
-    
-    <div class="card-image">
-        <a href="/2019/01/24/virgl-android-x86/" class="image is-7by1">
-            <img class="thumbnail" src="/uploads/opensuse.png" alt="virtio-gpu環境でopenGL-ES入りandroid-x86を動かす">
-        </a>
-    </div>
-    
-    <div class="card-content article ">
-        
-        <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
-            <div class="level-left">
-                <time class="level-item has-text-grey" datetime="2019-01-23T22:09:07.000Z">2019-01-24</time>
-                
-                <div class="level-item">
-                <a class="has-link-grey -link" href="/categories/Linux/">Linux</a>&nbsp;/&nbsp;<a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
-                </div>
-                
-                
-                <span class="level-item has-text-grey">
-                    
-                    
-                    11分 read (About 1642 words)
-                </span>
-                
-            </div>
-        </div>
-        
-        <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
-            
-                <a class="has-link-black-ter" href="/2019/01/24/virgl-android-x86/">virtio-gpu環境でopenGL-ES入りandroid-x86を動かす</a>
-            
-        </h1>
-        <div class="content">
-            <p>android-x86の8.1r1が出たので、KVM環境で動かしてみました。</p>
-<p>Linuxデスクトップ上でAndroidアプリを動かす試みとしては<a href="https://anbox.io/" target="_blank" rel="noopener">anbox</a>とかもあり、これもコンテナの下で動くAndroidということで非常に興味深いプロジェクトですが、まだopenSUSE上でまともに動かすことに成功していないのと、この間arch上で動いているanboxを<a href="https://tokaidolug.colorfultime.net/" target="_blank" rel="noopener">東海道らぐ</a>の会合で見ましたが、まだまともに動かないアプリも結構あり、じゃあ最近のKVM環境で動かしたらどうなんかなということで試してみました。</p>
-<p>今回はGPUおたくらしくvirtio-gpu(<a href="https://virgil3d.github.io/" target="_blank" rel="noopener">VirGL3d</a>)を使ってopenGL-ESを有効にしたandroid-x86を動かしてみます</p>
-        </div>
-        
-        
-        <div class="level is-mobile">
-            <div class="level-start">
-                <div class="level-item">
-                <a class="button is-size-7 is-light" href="/2019/01/24/virgl-android-x86/#more">Read More</a>
-                </div>
-            </div>
-        </div>
-        
-        
-    </div>
-</div>
-
-
-
-
-
-
-
-
-    <div class="card">
-    
-    <div class="card-image">
-        <a href="/2019/01/23/gvtg/" class="image is-7by1">
-            <img class="thumbnail" src="/uploads/opensuse.png" alt="openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その１">
-        </a>
-    </div>
-    
-    <div class="card-content article ">
-        
-        <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
-            <div class="level-left">
-                <time class="level-item has-text-grey" datetime="2019-01-22T22:05:00.000Z">2019-01-23</time>
-                
-                <div class="level-item">
-                <a class="has-link-grey -link" href="/categories/Linux/">Linux</a>&nbsp;/&nbsp;<a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
-                </div>
-                
-                
-                <span class="level-item has-text-grey">
-                    
-                    
-                    10分 read (About 1510 words)
-                </span>
-                
-            </div>
-        </div>
-        
-        <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
-            
-                <a class="has-link-black-ter" href="/2019/01/23/gvtg/">openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その１</a>
-            
-        </h1>
-        <div class="content">
-            <p>KVMやXenといったLinuxハイバーバイザ上のVMでGPUを使用する場合、GPUパススルーを用いてVM一つにGPUをまるごと渡してしまうのが個人ユースでは一般的です</p>
-<p>GPUパススルーを用いた場合、VM一つがGPUを専有してしまうため、使用できるVMの数に制約があったり、そもそもノートPCのように物理的にGPUが増設できない環境が存在したりと制約が多いのが難点でした</p>
-<p>これまでも一部のエンタープライズ向けGPUではGPUの共有機能はサポートされていましたが、最近のカーネル（実用レベルになってきたのは4.18ぐらいから）ではIntel GVT-gと呼ばれるIntel iGPUの共有機能が使えるようになってきました。</p>
-<p>今回はopenSUSE Tumbleweedを用いてGVT-gによる複数VMでのGPU共有を行ってみます</p>
-        </div>
-        
-        
-        <div class="level is-mobile">
-            <div class="level-start">
-                <div class="level-item">
-                <a class="button is-size-7 is-light" href="/2019/01/23/gvtg/#more">Read More</a>
-                </div>
-            </div>
-        </div>
-        
-        
-    </div>
-</div>
-
-
-
-
-
-
-
-
-    <div class="card">
-    
-    <div class="card-image">
-        <a href="/2019/01/22/ffmpeg-nvenc/" class="image is-7by1">
-            <img class="thumbnail" src="/uploads/opensuse.png" alt="openSUSE Leap 15でNVENCを有効にしたffmpegをビルドし、mpeg2-tsのGPUエンコードを行う">
-        </a>
-    </div>
-    
-    <div class="card-content article ">
-        
-        <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
-            <div class="level-left">
-                <time class="level-item has-text-grey" datetime="2019-01-22T04:13:18.000Z">2019-01-22</time>
-                
-                <div class="level-item">
-                <a class="has-link-grey -link" href="/categories/Linux/">Linux</a>&nbsp;/&nbsp;<a class="has-link-grey -link" href="/categories/Linux/openSUSE/">openSUSE</a>
-                </div>
-                
-                
-                <span class="level-item has-text-grey">
-                    
-                    
-                    26分 read (About 3959 words)
-                </span>
-                
-            </div>
-        </div>
-        
-        <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
-            
-                <a class="has-link-black-ter" href="/2019/01/22/ffmpeg-nvenc/">openSUSE Leap 15でNVENCを有効にしたffmpegをビルドし、mpeg2-tsのGPUエンコードを行う</a>
-            
-        </h1>
-        <div class="content">
-            <ul>
-<li>Gistから転載</li>
+ <a id="more"></a>
+<!-- toc -->
+<ul>
+<li><a href="#opensuse-remote-installとは">openSUSE Remote Installとは</a></li>
+<li><a href="#踏み台osのインストール">踏み台OSのインストール</a></li>
+<li><a href="#インストーラの取得">インストーラの取得</a></li>
+<li><a href="#ipアドレスの確認">IPアドレスの確認</a></li>
+<li><a href="#grubエントリーの追加">grubエントリーの追加</a></li>
+<li><a href="#vpsに接続">VPSに接続</a></li>
+<li><a href="#インストール後の設定">インストール後の設定</a><ul>
+<li><a href="#swapfileの設定">swapfileの設定</a></li>
+<li><a href="#ssh認証方式の変更">SSH認証方式の変更</a></li>
 </ul>
-<p>Nvidia GPUが存在するLinux環境では、NVIDIAのハードウェアエンコーディング/デコーディング機能であるNVENC/NVDECが利用可能ですが、openSUSEの標準パッケージとして利用可能なffmpegではNVENC/NVDECが有効化されていません。これはNVIDIAのライセンス規約により同機能を有効にしたffmpegのバイナリ再配布が許されていないためです。(おそらくほとんどのディストリビューション添付のffmpegも同じはず）</p>
-<p>そこで、ffmpegをソースからビルドし、NVENC/NVDECを使えるようにします</p>
+</li>
+<li><a href="#まとめ">まとめ</a></li>
+</ul>
+<!-- tocstop -->
+<h2><span id="opensuse-remote-installとは">openSUSE Remote Installとは</span></h2><p>openSUSEをインストールする方法としては、一般的な手法としてCDなりUSBメディアなりのインストールメディアから起動してインストーラを立ち上げる方法がありますが、その他に、grubからインストーラのvmlinuzとinitrdを起動してSSH経由でインストールするというリモートインストールという手法があり、<a href="https://en.opensuse.org/SDB:Remote_installation" target="_blank" rel="noopener">公式wiki</a>でも解説されています</p>
+<p>なので今回はある意味その記事をなぞるだけの手抜き記事でもあります</p>
+<h2><span id="踏み台osのインストール">踏み台OSのインストール</span></h2><p>今回は踏み台OSとしてubuntu 18.04を使いますのでwebArenaのマニュアルに従ってインストールします。</p>
+<p>マニュアルに従えば良いだけなので細かいところは割愛しますが、ubuntuの初期ユーザーと初期パスワードは相当マニュアルを熟読しないとわかりにくいところにありますので注意してください</p>
+<p>webArenaのubuntuテンプレートはデフォルトで公開鍵認証のみで、パスワード認証はOFFになっていますが、今回リモートインストールのために一時的にパスワード認証を使いますので一度sshd_configを弄ってパスワードログイン有効にしてパスワードログインが可能であることを確認してください（インフラ側ファイアウォール等で塞がれていないことを確認のため）</p>
+<h2><span id="インストーラの取得">インストーラの取得</span></h2><p>/bootにインストーラのvmlinuzとinitrdを導入します</p>
+<p><a href="https://en.opensuse.org/SDB:Remote_installation" target="_blank" rel="noopener">公式wiki</a>に書かれているやり方でOKですが、download.opensuse.orgより<a href="http://ftp.riken.jp/Linux/opensuse" target="_blank" rel="noopener">理研のミラー</a>の方が速いのでこちらを使います<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo wget --output-document=/boot/vmlinuz.install http://ftp.riken.jp/Linux/opensuse/distribution/leap/15.0/repo/oss/boot/x86_64/loader/linux</span><br><span class="line">sudo wget --output-document=/boot/initrd.install http://ftp.riken.jp/Linux/opensuse/distribution/leap/15.0/repo/oss/boot/x86_64/loader/initrd</span><br></pre></td></tr></table></figure></p>
+<p>ちなみに入れるのがLeap 15ではなくTumbleweedならばこう<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo wget --output-document=/boot/vmlinuz.install http://ftp.riken.jp/Linux/opensuse/tumbleweed/repo/oss/boot/x86_64/loader/linux</span><br><span class="line">sudo wget --output-document=/boot/initrd.install http://ftp.riken.jp/Linux/opensuse/tumbleweed/repo/oss/boot/x86_64/loader/initrd</span><br></pre></td></tr></table></figure></p>
+<h2><span id="ipアドレスの確認">IPアドレスの確認</span></h2><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ip a</span><br></pre></td></tr></table></figure>
+<p>でVPSのIPアドレスとネットマスクを、<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ip route show</span><br></pre></td></tr></table></figure></p>
+<p>でゲートウェイを確認しておきます</p>
+<h2><span id="grubエントリーの追加">grubエントリーの追加</span></h2><p>grubにインストーラを起動するメニュー項目を追加して、それをデフォルトにします</p>
+<p>ubuntuの場合。/etc/grub.d/40_customにメニューエントリを追加します<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vi /etc/grub.d/40_custom</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">menuentry &apos;openSUSE install&apos; &#123;</span><br><span class="line">   insmod gzio</span><br><span class="line">   set root=&apos;hd0,msdos1&apos;</span><br><span class="line">   linux /boot/vmlinuz.install noapic usessh=1 sshpassword=&quot;[それなりに複雑なパスワード]&quot; install=http://ftp.riken.jp/Linux/opensuse/distribution/leap/15.0/repo/oss hostip=[調べたIPアドレス] netmask=[調べたネットマスク] gateway=[調べたゲートウェイ] nameserver=1.1.1.1</span><br><span class="line">   initrd /boot/initrd.install</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Tumbleweedならこう<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">menuentry &apos;openSUSE install&apos; &#123;</span><br><span class="line">   insmod gzio</span><br><span class="line">   set root=&apos;hd0,msdos1&apos;</span><br><span class="line">   linux /boot/vmlinuz.install noapic usessh=1 sshpassword=&quot;[それなりに複雑なパスワード]&quot; install=http://ftp.riken.jp/Linux/opensuse/tumbleweed/repo/oss hostip=[調べたIPアドレス] netmask=[調べたネットマスク] gateway=[調べたゲートウェイ] nameserver=1.1.1.1</span><br><span class="line">   initrd /boot/initrd.install</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>パスワードは単純なパスワードだとインストーラ起動時に弾かれて起動しなくなってしまうという罠がありますので、まあそのへんのネットサービス登録時にありがちな</p>
+<ul>
+<li>8文字以上</li>
+<li>大文字小文字数字記号を必ず混ぜる</li>
+</ul>
+<p>あたりを守って設定してください</p>
+<p>nameserverは、みんな大好きgoogle DNS(8.8.8.8)かcloudflareのDNS(1.1.1.1)を使えばOKです</p>
+<p>メニューエントリを登録したら/etc/default/grubを弄ってデフォルトエントリーにします</p>
+<p>grub2ではデフォルトエントリーの指定が番号ではなくて名前になっているので注意してください</p>
+<figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vi /etc/default/grub</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GRUB_DEFAULT=&quot;openSUSE install&quot;</span><br></pre></td></tr></table></figure>
+<p>ここまで編集したら</p>
+<figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo update-grub</span><br></pre></td></tr></table></figure>
+<p>で編集内容を反映させてください</p>
+<p>ここで設定を間違えるとVPSに接続不能になってしまい、踏み台OSのインストールからやり直しとなりますのでよーく確認してください</p>
+<p>よく確認した後、vpsをリブートします</p>
+<figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo reboot</span><br></pre></td></tr></table></figure>
+<h2><span id="vpsに接続">VPSに接続</span></h2><p>VPSをリブートしたら、VPSにX転送ありで接続すればインストーラが起動できます</p>
+<p>Linuxデスクトップからの接続であれば<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -X [vpsのIPアドレス]</span><br></pre></td></tr></table></figure></p>
+<p>で、windowsであればmovaxtermなりのX11ありのターミナルで接続します</p>
+<p>この時以前に踏み台OSにSSH接続していたのであれば、当然SSHホストキーが変わっていますので、それ相応の処置が必要になりますので注意してください</p>
+<p>openSUSEインストーラがデバイスを自動認識して、インストールのベースシステムをRAMディスクに展開するまでにそれなりの時間（4〜5分？)がかかりますのでなかなか繋がらないからと言って慌てないよう</p>
+<p>先程設定したパスワードを入れてログインすると、以下のようなメッセージが出るはずです<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Password: </span><br><span class="line"></span><br><span class="line">openSUSE Leap 15.0 Installation</span><br><span class="line"></span><br><span class="line">Run yast.ssh to start the installation.</span><br><span class="line"></span><br><span class="line">/usr/bin/xauth:  file /root/.Xauthority does not exist</span><br><span class="line">0:install:~ #</span><br></pre></td></tr></table></figure></p>
+<p>指示の通り、yast,sshを実行すればいつものインストーラが立ち上がりますので</p>
+<figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># yast.ssh</span><br></pre></td></tr></table></figure>
+<p><img src="shot1.png" alt="shot1"></p>
+<p>言語を日本語に設定してインストーラを開始します<br><img src="shot2.png" alt="shot2"></p>
+<p>概ねはインストーラに従ってインストールを進めればOKですが<br><img src="shot3.png" alt="shot3"></p>
+<p>パーティション設定だけはwebArenaのローカルルールに従っておいたほうが安全なので独自に設定を行います</p>
+<p>「熟練者向けパーティション設定」＞「既存のパーティション設定を元にする」を選んでください</p>
+<p><img src="shot4.png" alt="shot4"></p>
+<p>webArenaのVPSディスクにはVPSで使って良い20GBの領域と別に、10MBぐらいのVPSメタデータが入ったパーティションが存在しますので、これを壊さないように設定します</p>
+<p>ディスクsda＞sda1＞「編集」を選びます<br>(スクリーンショットは検証用にローカル環境で建てたVMなのでデバイス名とパーティションサイズが微妙に異なりますがそのへんは読み替えてくださいねで)<br><img src="shot5.png" alt="shot5"></p>
+<p>/dev/sda1を「ext4でフォーマット」で「/にマウント」します<br><img src="shot6.png" alt="shot6"></p>
+<p>swapはインストール後にswapfileを作る方針で（元々のubuntuもswapfile式を使っています）</p>
+<p>openSUSEらしくbtrfsでフォーマットしたいところですが、改めてwebarenaのテンプレートに戻す必要が出たときにトラブルの元になりそうなので日和りましたｗ</p>
+<p>コンソール画面が使えないwebArenaの場合、snapperの恩恵もないですし</p>
+<p><img src="shot7.png" alt="shot7"></p>
+<p>あとはお好みで設定しつつ、最終的にはこんな感じで</p>
+<p>webarenaの場合、インフラ側でFWを設定する感じなので、openSUSE側のfirewallを切るのも手だと思います。<br>あるいはopenSUSE側でfirewallを受け持ってwebarena側のFWは素通し設定にしてしまうのもありかと思いますが、その場合openSUSE側でfirewall設定をしくじるとコンソール画面のないwebArenaではログイン不能になってしまうので、webArenaのFWに任せたほうが安全だと思います</p>
+<p>（自分はopenSUSE側のFWを切ってます）</p>
+<p><img src="shot8.png" alt="shot8"></p>
+<p>あとは普通にインストールが進みます<br>ftp.riken.jpを使っていれば１０分前後でしょうか</p>
+<p><img src="shot9.png" alt="shot9"></p>
+<h2><span id="インストール後の設定">インストール後の設定</span></h2><h3><span id="swapfileの設定">swapfileの設定</span></h3><p>スワップが設定されていませんのでswapfileを設定します<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ free</span><br><span class="line">              total        used        free      shared  buff/cache   available</span><br><span class="line">Mem:        1003048       64628      741828        7060      196592      788252</span><br><span class="line">Swap:             0           0           0</span><br></pre></td></tr></table></figure></p>
+<p>今回は1GBのswap用ファイルを作ります（増やしたければcountを増やしてください）<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$ sudo dd if=/dev/zero of=/swapfile bs=1M count=1024</span><br><span class="line"></span><br><span class="line">1073741824 bytes (1.1 GB, 1.0 GiB) copied, 0.926476 s, 1.2 GB/s</span><br><span class="line"></span><br><span class="line">$ sudo chmod 600 /swapfile</span><br><span class="line"></span><br><span class="line">$sudo mkswap /swapfile</span><br><span class="line">スワップ空間バージョン 1 を設定します。サイズ = 1024 MiB (1073737728 バイト)</span><br><span class="line">ラベルはありません, UUID=cc969dda-914d-4f42-a063-f391baaba9fa</span><br><span class="line"></span><br><span class="line">$ sudo swapon /swapfile</span><br><span class="line"></span><br><span class="line">$ free</span><br><span class="line">              total        used        free      shared  buff/cache   available</span><br><span class="line">Mem:        1003048       65060       62484        7060      875504      777376</span><br><span class="line">Swap:       1048572           0     1048572</span><br></pre></td></tr></table></figure></p>
+<p>swapが効くことを確認したら/etc/fstabにswapマウントを追加します</p>
+<figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vi /etc/fstab</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/swapfile     swap      swap    defaults        0 0</span><br></pre></td></tr></table></figure>
+<h3><span id="ssh認証方式の変更">SSH認証方式の変更</span></h3><p>デフォルトではSSHがパスワード認証になっていますので公開鍵認証に切り替えて、ポートもwell knownの22番から変更するのをおすすめします</p>
+<p>あとはお好きに各種サーバーを設定してください</p>
+<h2><span id="まとめ">まとめ</span></h2><p>openSUSEがサポートされていない各種VPSでも、sshで入ることができ、grubを弄ることができればopenSUSEはインストールできますので、ぜひ一度お試しください</p>
+
         </div>
         
-        
-        <div class="level is-mobile">
+        <div class="level is-size-7 is-uppercase">
             <div class="level-start">
                 <div class="level-item">
-                <a class="button is-size-7 is-light" href="/2019/01/22/ffmpeg-nvenc/#more">Read More</a>
+                    <span class="is-size-6 has-text-grey has-mr-7">#</span>
+                    <a class="has-link-grey -link" href="/tags/Linux/">Linux</a>, <a class="has-link-grey -link" href="/tags/VPS/">VPS</a>, <a class="has-link-grey -link" href="/tags/openSUSE/">openSUSE</a>, <a class="has-link-grey -link" href="/tags/webArena/">webArena</a>
                 </div>
             </div>
         </div>
+        
         
         
     </div>
@@ -480,7 +300,26 @@
 
 
 
-
+<div class="card card-transparent">
+    <div class="level post-navigation is-flex-wrap is-mobile">
+        
+        <div class="level-start">
+            <a class="level level-item has-link-grey  article-nav-prev" href="/2999/12/31/firstpost/">
+                <i class="level-item fas fa-chevron-left"></i>
+                <span class="level-item">blog建てた</span>
+            </a>
+        </div>
+        
+        
+        <div class="level-end">
+            <a class="level level-item has-link-grey  article-nav-next" href="/2019/01/26/gvtg2/">
+                <span class="level-item">openSUSE Tumbleweed上のKVM仮想マシンでIntel iGPUを共有する(GVT-g)その２</span>
+                <i class="level-item fas fa-chevron-right"></i>
+            </a>
+        </div>
+        
+    </div>
+</div>
 
 
 </div>
@@ -1123,7 +962,7 @@
             <div class="level-start has-text-centered-mobile">
                 <a class="footer-logo is-block has-mb-6" href="/">
                 
-                    <img src="/uploads/banner.jpg" alt="それすらもコアの果て" height="28">
+                    <img src="/uploads/banner.jpg" alt="webArenaの３６０円VPSにopenSUSE Leap 15をリモートインストールする" height="28">
                 
                 </a>
                 <p class="is-size-7">
